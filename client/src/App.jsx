@@ -15,6 +15,7 @@ import Organization from './pages/Organization.jsx';
 import Maintenance from './pages/Maintenance.jsx';
 import Audits from './pages/Audits.jsx';
 import Reports from './pages/Reports.jsx';
+import Notifications from './pages/Notifications.jsx';
 
 // Clean route paths the shell links to. The prototype used *.dc.html file
 // links; the app maps those to the routes below.
@@ -41,7 +42,7 @@ export default function App() {
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/audits" element={<Audits />} />
         <Route path="/reports" element={<Reports />} />
-        <Route path="/notifications" element={<Placeholder title="Notifications" owner="Tanishq" />} />
+        <Route path="/notifications" element={<Notifications />} />
       </Route>
 
       {/* Contact is a standalone marketing-style page (Tanishq) */}
