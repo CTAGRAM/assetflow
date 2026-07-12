@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Reports &amp; Analytics">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="reports" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Reports &amp; Analytics</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">Utilization, maintenance load, and booking pressure — every card exports to CSV.</div>
+      </div>
+      <button onClick="{{ exportAll }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:8px; padding:11px 18px; border-radius:99px; background:#17171C; color:#fff; font-family:inherit; font-size:12.5px; font-weight:700" style-hover="background:#5F4DEE">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Export all</button>
+    </div>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; gap:9px; background:#E5F6EF; border:1px solid #BFE8D6; border-radius:14px; padding:11px 16px; margin-bottom:14px; font-size:12px; font-weight:700; color:#157A57">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>{{ toast }}
+      </div>
+    </sc-if>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:14px">
+
+      <!-- utilization trend -->
+      <div style="background:#fff; border-radius:22px; padding:18px 20px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+          <span style="font-size:13px; font-weight:800">Asset utilization trend</span>
+          <button onClick="{{ expUtil }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:10px; font-weight:800; padding:5px 11px; border-radius:99px; border:1px solid #E7E7EE; color:#3F4046" style-hover="border-color:#5F4DEE; color:#5F4DEE">↓ CSV</button>
+        </div>
+        <div style="font-size:10.5px; font-weight:600; color:#A2A3AE; margin-bottom:12px">Share of assets allocated or booked, Jan – Jul 2026</div>
+        <svg viewBox="0 0 340 120" style="width:100%">
+          <path d="M10,86 C40,80 60,74 90,70 C120,66 140,58 170,54 C200,50 220,44 250,40 C280,36 310,30 330,26" fill="none" stroke="#5F4DEE" stroke-width="2.5"></path>
+          <path d="M10,86 C40,80 60,74 90,70 C120,66 140,58 170,54 C200,50 220,44 250,40 C280,36 310,30 330,26 L330,112 L10,112 Z" fill="rgba(95,77,238,0.09)"></path>
+          <sc-for list="{{ utilPts }}" as="p" hint-placeholder-count="7">
+            <circle cx="{{ p.x }}" cy="{{ p.y }}" r="3" fill="#fff" stroke="#5F4DEE" stroke-width="2"></circle>
+          </sc-for>
+        </svg>
+        <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:700; color:#A2A3AE; padding:0 4px">
+          <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span>
+        </div>
+        <div style="display:flex; gap:14px; margin-top:10px">
+          <span style="font-size:11px; font-weight:700; color:#157A57">▲ 71% this month</span>
+          <span style="font-size:11px; font-weight:600; color:#A2A3AE">vs 52% in January</span>
+        </div>
+      </div>
+
+      <!-- most used vs idle -->
+      <div style="background:#fff; border-radius:22px; padding:18px 20px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+          <span style="font-size:13px; font-weight:800">Most-used vs idle</span>
+          <button onClick="{{ expUsage }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:10px; font-weight:800; padding:5px 11px; border-radius:99px; border:1px solid #E7E7EE; color:#3F4046" style-hover="border-color:#5F4DEE; color:#5F4DEE">↓ CSV</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <sc-for list="{{ topUsed }}" as="u" hint-placeholder-count="4">
+            <div style="display:flex; align-items:center; gap:9px">
+              <span style="font-size:11px; font-weight:700; width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ u.name }}</span>
+              <div style="flex:1; height:14px; border-radius:99px; background:#F1F1F6; overflow:hidden"><div style="height:100%; border-radius:99px; background:linear-gradient(90deg,#7B6CF6,#5F4DEE); width:{{ u.pct }}%"></div></div>
+              <span style="font-size:10.5px; font-weight:800; font-variant-numeric:tabular-nums; width:56px; text-align:right">{{ u.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:14px; padding-top:12px; border-top:1px dashed #EBEBF1">
+          <div style="font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#C0331F; margin-bottom:7px">Idle 90+ days</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px">
+            <sc-for list="{{ idle }}" as="i" hint-placeholder-count="4">
+              <span style="font-size:10.5px; font-weight:700; background:#FDECEA; color:#C0331F; border-radius:99px; padding:4px 11px">{{ i.label }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- maintenance frequency -->
+      <div style="background:#fff; border-radius:22px; padding:18px 20px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+          <span style="font-size:13px; font-weight:800">Maintenance frequency</span>
+          <button onClick="{{ expMaint }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:10px; font-weight:800; padding:5px 11px; border-radius:99px; border:1px solid #E7E7EE; color:#3F4046" style-hover="border-color:#5F4DEE; color:#5F4DEE">↓ CSV</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <sc-for list="{{ maintByCat }}" as="m" hint-placeholder-count="5">
+            <div style="display:flex; align-items:center; gap:9px">
+              <span style="font-size:11px; font-weight:700; width:110px">{{ m.name }}</span>
+              <div style="flex:1; height:14px; border-radius:99px; background:#F1F1F6; overflow:hidden"><div style="height:100%; border-radius:99px; background:{{ m.color }}; width:{{ m.pct }}%"></div></div>
+              <span style="font-size:10.5px; font-weight:800; width:66px; text-align:right">{{ m.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:10.5px; font-weight:600; color:#A2A3AE; margin-top:12px">Top offender: <b style="color:#17171C">{{ maintTop }}</b></div>
+      </div>
+
+      <!-- due / retiring -->
+      <div style="background:#fff; border-radius:22px; padding:18px 20px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+          <span style="font-size:13px; font-weight:800">Due for attention</span>
+          <button onClick="{{ expDue }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:10px; font-weight:800; padding:5px 11px; border-radius:99px; border:1px solid #E7E7EE; color:#3F4046" style-hover="border-color:#5F4DEE; color:#5F4DEE">↓ CSV</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:7px">
+          <sc-for list="{{ dueList }}" as="d" hint-placeholder-count="5">
+            <div style="display:flex; align-items:center; gap:9px; padding:8px 11px; border-radius:12px; background:#FAFAFC">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:700; color:#5F4DEE">{{ d.tag }}</span>
+              <span style="font-size:11.5px; font-weight:700; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ d.name }}</span>
+              <span style="font-size:9.5px; font-weight:800; border-radius:99px; padding:3px 9px; background:{{ d.chipBg }}; color:{{ d.chipInk }}">{{ d.why }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- dept allocation -->
+      <div style="background:#fff; border-radius:22px; padding:18px 20px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+          <span style="font-size:13px; font-weight:800">Department allocation</span>
+          <button onClick="{{ expDept }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:10px; font-weight:800; padding:5px 11px; border-radius:99px; border:1px solid #E7E7EE; color:#3F4046" style-hover="border-color:#5F4DEE; color:#5F4DEE">↓ CSV</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:9px">
+          <sc-for list="{{ deptAlloc }}" as="d" hint-placeholder-count="6">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-bottom:4px">
+                <span>{{ d.name }}</span><span style="color:#A2A3AE">{{ d.label }}</span>
+              </div>
+              <div style="display:flex; height:12px; border-radius:99px; overflow:hidden; background:#F1F1F6">
+                <div style="background:#5F4DEE; width:{{ d.allocPct }}%"></div>
+                <div style="background:#C9C2F8; width:{{ d.availPct }}%"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; gap:14px; margin-top:12px; font-size:10px; font-weight:700; color:#6B6C75">
+          <span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; border-radius:3px; background:#5F4DEE"></span>Allocated</span>
+          <span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; border-radius:3px; background:#C9C2F8"></span>Available / other</span>
+        </div>
+      </div>
+
+      <!-- booking heatmap -->
+      <div style="background:#17171C; border-radius:22px; padding:18px 20px">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px">
+          <span style="font-size:13px; font-weight:800; color:#fff">Booking heatmap</span>
+          <button onClick="{{ expHeat }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:10px; font-weight:800; padding:5px 11px; border-radius:99px; border:1px solid #33333B; color:#9A9AA5" style-hover="border-color:#5F4DEE; color:#fff">↓ CSV</button>
+        </div>
+        <div style="font-size:10.5px; font-weight:600; color:#9A9AA5; margin-bottom:14px">Bookings per hour, this week — darker is busier</div>
+        <div style="display:grid; grid-template-columns:34px repeat(10, 1fr); gap:3px; align-items:center">
+          <span></span>
+          <sc-for list="{{ heatHours }}" as="h" hint-placeholder-count="10"><span style="font-size:8px; font-weight:700; color:#6B6C75; text-align:center">{{ h.label }}</span></sc-for>
+          <sc-for list="{{ heatRows }}" as="r" hint-placeholder-count="5">
+            <span style="font-size:9px; font-weight:800; color:#9A9AA5">{{ r.day }}</span>
+            <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="10">
+              <div title="{{ c.tip }}" style="height:22px; border-radius:6px; background:{{ c.bg }}"></div>
+            </sc-for>
+          </sc-for>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; margin-top:12px; font-size:9.5px; font-weight:700; color:#6B6C75">
+          Quiet <span style="width:14px; height:10px; border-radius:3px; background:#26262C"></span><span style="width:14px; height:10px; border-radius:3px; background:#403880"></span><span style="width:14px; height:10px; border-radius:3px; background:#5F4DEE"></span><span style="width:14px; height:10px; border-radius:3px; background:#8A7DF2"></span> Peak
+          <span style="margin-left:auto; color:#9A9AA5">Peak window: <b style="color:#fff">{{ peak }}</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { toast: null };
+  flash(m) { this.setState({ toast: m }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: null }), 3800); }
+  csv(name, rows) {
+    const text = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+    a.download = name; a.click();
+    this.flash(name + ' downloaded.');
+  }
+  renderVals() {
+    const AF = window.AF; if (!AF) return {};
+    const mins = t => parseInt(t.slice(0, 2), 10);
+
+    const utilVals = [52, 55, 58, 61, 64, 68, 71];
+    const utilPts = utilVals.map((v, i) => ({ x: 10 + i * 53.3, y: 112 - (v - 40) * 2.15 }));
+
+    // usage: bookings per resource
+    const usage = {};
+    AF.bookings.filter(b => b.status !== 'Cancelled').forEach(b => usage[b.resource] = (usage[b.resource] || 0) + 1);
+    const used = Object.keys(usage).map(t => ({ tag: t, n: usage[t], name: (AF.asset(t) || {}).name || t })).sort((a, b) => b.n - a.n);
+    const maxU = used.length ? used[0].n : 1;
+    const topUsed = used.slice(0, 5).map(u => ({ name: u.name, pct: Math.round(u.n / maxU * 100), label: u.n + ' bkgs' }));
+    const idle = AF.assets.filter(a => a.status === 'Available' && !usage[a.tag] && a.cat !== 'rooms').slice(0, 5).map(a => ({ label: a.tag + ' ' + a.name.split(' ').slice(0, 2).join(' ') }));
+
+    // maintenance by category
+    const mc = {};
+    AF.maintenance.forEach(m => { const c = (AF.asset(m.asset) || {}).cat; if (c) mc[c] = (mc[c] || 0) + 1; });
+    const mcArr = Object.keys(mc).map(c => ({ id: c, name: (AF.categories.find(x => x.id === c) || {}).name || c, n: mc[c] })).sort((a, b) => b.n - a.n);
+    const maxM = mcArr.length ? mcArr[0].n : 1;
+    const colors = ['#E14B3B', '#E98A3C', '#5F4DEE', '#8A7DF2', '#C9C2F8'];
+    const maintByCat = mcArr.map((m, i) => ({ name: m.name, pct: Math.round(m.n / maxM * 100), label: m.n + ' reqs', color: colors[Math.min(i, 4)] }));
+
+    // due for attention
+    const dueList = [
+      { tag: 'AF-0003', why: 'Service due', chipBg: '#FBF1E0', chipInk: '#A65B04' },
+      { tag: 'AF-0026', why: 'Open repair', chipBg: '#FBF1E0', chipInk: '#A65B04' },
+      { tag: 'AF-0002', why: 'Retire — 7 yrs', chipBg: '#F1F1F6', chipInk: '#6B6C75' },
+      { tag: 'AF-0010', why: 'Confirmed lost', chipBg: '#FDECEA', chipInk: '#C0331F' },
+      { tag: 'AF-0015', why: 'Warranty ends', chipBg: '#EFEAF9', chipInk: '#6D4FC2' },
+    ].map(d => ({ ...d, name: (AF.asset(d.tag) || {}).name || d.tag }));
+
+    // dept allocation
+    const deptAlloc = AF.departments.filter(d => d.active && !d.parent).map(d => {
+      const das = AF.assets.filter(a => a.dept === d.id || (a.dept && AF.departments.find(x => x.id === a.dept && x.parent === d.id)));
+      const alloc = das.filter(a => a.status === 'Allocated').length;
+      const total = das.length || 1;
+      return { name: d.name, label: alloc + ' / ' + das.length + ' allocated', allocPct: Math.round(alloc / total * 100), availPct: 100 - Math.round(alloc / total * 100), _row: [d.name, alloc, das.length] };
+    });
+
+    // heatmap
+    const days = ['2026-07-13', '2026-07-14', '2026-07-15', '2026-07-16', '2026-07-17'];
+    const dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const grid = days.map(d => Array.from({ length: 10 }, () => 0));
+    AF.bookings.filter(b => b.status !== 'Cancelled').forEach(b => {
+      const di = days.indexOf(b.date); if (di < 0) return;
+      for (let h = mins(b.start); h < Math.min(18, parseInt(b.end.slice(0, 2), 10) + (b.end.slice(3) === '00' ? 0 : 1)); h++) {
+        if (h >= 8 && h < 18) grid[di][h - 8]++;
+      }
+    });
+    const shades = ['#26262C', '#403880', '#5F4DEE', '#8A7DF2'];
+    let peakV = 0, peakLbl = '—';
+    const heatRows = grid.map((row, di) => ({
+      day: dows[di],
+      cells: row.map((v, hi) => {
+        if (v > peakV) { peakV = v; peakLbl = dows[di] + ' ' + (8 + hi) + ':00–' + (9 + hi) + ':00'; }
+        return { bg: shades[Math.min(v, 3)], tip: dows[di] + ' ' + (8 + hi) + ':00 — ' + v + ' booking(s)' };
+      }),
+    }));
+    const heatHours = Array.from({ length: 10 }, (_, k) => ({ label: (8 + k) + '' }));
+
+    return {
+      toast: this.state.toast || false,
+      utilPts, topUsed, idle, maintByCat,
+      maintTop: mcArr.length ? mcArr[0].name + ' (' + mcArr[0].n + ' requests this year)' : '—',
+      dueList, deptAlloc, heatRows, heatHours, peak: peakLbl,
+      expUtil: () => this.csv('utilization-trend.csv', [['Month', 'Utilization %']].concat(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((m, i) => [m, utilVals[i]]))),
+      expUsage: () => this.csv('resource-usage.csv', [['Resource', 'Bookings']].concat(used.map(u => [u.name, u.n]))),
+      expMaint: () => this.csv('maintenance-by-category.csv', [['Category', 'Requests']].concat(mcArr.map(m => [m.name, m.n]))),
+      expDue: () => this.csv('due-for-attention.csv', [['Tag', 'Asset', 'Reason']].concat(dueList.map(d => [d.tag, d.name, d.why]))),
+      expDept: () => this.csv('department-allocation.csv', [['Department', 'Allocated', 'Total']].concat(deptAlloc.map(d => d._row))),
+      expHeat: () => this.csv('booking-heatmap.csv', [['Day'].concat(heatHours.map(h => h.label + ':00'))].concat(grid.map((row, i) => [dows[i]].concat(row)))),
+      exportAll: () => this.csv('assetflow-analytics.csv', [['Report', 'Key metric'], ['Utilization', '71%'], ['Top resource', used.length ? used[0].name : '—'], ['Maintenance top', mcArr.length ? mcArr[0].name : '—'], ['Peak booking window', peakLbl]]),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

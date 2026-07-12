@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#F4F3F0} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder,textarea::placeholder{color:#AEB2C2} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#F4F3F0; position:relative; overflow:hidden; display:grid; place-items:center; padding:40px 20px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#2B2D33" data-screen-label="Contact IT">
+  <svg width="360" height="360" viewBox="0 0 200 200" style="position:absolute; top:-70px; left:-60px; opacity:0.5" fill="none" stroke="#DDE0F2" stroke-width="2" stroke-linecap="round"><path d="M100 180 C100 120 100 80 100 20"></path><path d="M100 150 C70 140 50 120 45 95M100 150 C130 140 150 120 155 95M100 115 C75 105 60 90 55 70M100 115 C125 105 140 90 145 70M100 80 C82 72 70 60 66 45M100 80 C118 72 130 60 134 45"></path></svg>
+  <svg width="420" height="420" viewBox="0 0 200 200" style="position:absolute; bottom:-120px; right:-90px; opacity:0.55; transform:rotate(160deg)" fill="none" stroke="#DDE0F2" stroke-width="2" stroke-linecap="round"><path d="M100 180 C100 120 100 80 100 20"></path><path d="M100 150 C70 140 50 120 45 95M100 150 C130 140 150 120 155 95M100 115 C75 105 60 90 55 70M100 115 C125 105 140 90 145 70M100 80 C82 72 70 60 66 45M100 80 C118 72 130 60 134 45"></path></svg>
+
+  <div style="width:min(960px, 100%); background:#fff; border-radius:10px; box-shadow:0 24px 70px rgba(43,45,51,0.13)">
+    <div style="display:flex; align-items:center; padding:26px 38px 6px; flex-wrap:wrap; gap:12px">
+      <a href="Login.dc.html" style="font-size:17px; font-weight:800; letter-spacing:0.5px; color:#2B2D33; text-decoration:none">assetflow<span style="color:#5F4DEE">.</span></a>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:26px">
+        <a href="Explore.dc.html" style="font-size:11px; font-weight:600; color:#7A7E8C; text-decoration:none" style-hover="color:#2B2D33">Explore demo</a>
+        <span style="font-size:11px; font-weight:800; color:#5F4DEE; border-bottom:2px solid #5F4DEE; padding-bottom:2px">Contact IT</span>
+        <a href="Login.dc.html#login" style="font-size:11px; font-weight:600; color:#7A7E8C; text-decoration:none" style-hover="color:#2B2D33">Log in</a>
+        <a href="Login.dc.html#signup" style="font-size:11px; font-weight:600; color:#7A7E8C; text-decoration:none" style-hover="color:#2B2D33">Sign up</a>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1.15fr; gap:34px; padding:24px 38px 40px">
+      <!-- left: info -->
+      <div>
+        <h1 style="margin:0 0 10px; font-size:26px; font-weight:600; letter-spacing:-0.4px">We've got your back</h1>
+        <p style="margin:0 0 24px; font-size:13px; font-weight:500; color:#8A8E9C; line-height:1.65">Locked out, wrong role, missing asset in your list? The IT service desk answers within one business day — usually much faster.</p>
+        <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:26px">
+          <div style="display:flex; align-items:center; gap:11px">
+            <span style="width:34px; height:34px; border-radius:10px; background:#EEEBFE; display:grid; place-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5F4DEE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"></path><path d="M22 6l-10 7L2 6"></path></svg></span>
+            <span style="display:flex; flex-direction:column"><span style="font-size:12.5px; font-weight:800">it-desk@northwind.io</span><span style="font-size:10.5px; font-weight:600; color:#8A8E9C">for accounts &amp; access</span></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:11px">
+            <span style="width:34px; height:34px; border-radius:10px; background:#EEEBFE; display:grid; place-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5F4DEE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.12.96.37 1.9.72 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.35 1.85.6 2.81.72A2 2 0 0122 16.92z"></path></svg></span>
+            <span style="display:flex; flex-direction:column"><span style="font-size:12.5px; font-weight:800">ext. 4410</span><span style="font-size:10.5px; font-weight:600; color:#8A8E9C">Mon–Fri, 08:00–18:00</span></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:11px">
+            <span style="width:34px; height:34px; border-radius:10px; background:#EEEBFE; display:grid; place-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5F4DEE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+            <span style="display:flex; flex-direction:column"><span style="font-size:12.5px; font-weight:800">HQ · Floor 1, Desk 12</span><span style="font-size:10.5px; font-weight:600; color:#8A8E9C">walk-ins welcome</span></span>
+          </div>
+        </div>
+        <div style="border-top:1px solid #EFEFF4; padding-top:18px">
+          <div style="font-size:10px; font-weight:800; letter-spacing:0.6px; text-transform:uppercase; color:#AEB2C2; margin-bottom:10px">Common fixes</div>
+          <div style="display:flex; flex-direction:column; gap:7px; font-size:11.5px; font-weight:600; color:#7A7E8C; line-height:1.5">
+            <span>· Forgot your password? <a href="Login.dc.html#login" style="font-weight:700; text-decoration:none">Reset it yourself</a> from the login page.</span>
+            <span>· Need a role change? Ask your Admin — roles are set in the <b>Employee Directory</b>.</span>
+            <span>· Broken equipment? Raise it under <b>Maintenance</b>, not here.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: form -->
+      <div style="border-left:1px solid #EFEFF4; padding-left:34px">
+        <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="margin-bottom:20px">
+              <input value="{{ cName }}" onChange="{{ setCName }}" onBlur="{{ touchName }}" placeholder="Your name" style="all:unset; box-sizing:border-box; width:100%; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; padding:9px 2px; border-bottom:1.5px solid {{ nameBorder }}">
+              <sc-if value="{{ nameError }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px; font-weight:600; color:#E14B3B; margin-top:5px">{{ nameError }}</div></sc-if>
+            </div>
+            <div style="margin-bottom:20px">
+              <input value="{{ cEmail }}" onChange="{{ setCEmail }}" onBlur="{{ touchEmail }}" placeholder="Work email" style="all:unset; box-sizing:border-box; width:100%; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; padding:9px 2px; border-bottom:1.5px solid {{ emailBorder }}">
+              <sc-if value="{{ emailError }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px; font-weight:600; color:#E14B3B; margin-top:5px">{{ emailError }}</div></sc-if>
+            </div>
+            <div style="margin-bottom:20px; border-bottom:1.5px solid #DADDE8; padding:4px 0">
+              <select value="{{ cTopic }}" onChange="{{ setCTopic }}" style="width:100%; padding:5px 0">
+                <option>Account &amp; access</option><option>Wrong or missing asset</option><option>Booking problem</option><option>Role / permissions</option><option>Something else</option>
+              </select>
+            </div>
+            <div style="margin-bottom:22px">
+              <textarea value="{{ cMsg }}" onChange="{{ setCMsg }}" onBlur="{{ touchMsg }}" placeholder="What's going on? Include an asset tag (AF-…) if it's about a specific item." rows="4" style="all:unset; box-sizing:border-box; width:100%; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; padding:9px 2px; border-bottom:1.5px solid {{ msgBorder }}; resize:vertical; min-height:70px; line-height:1.6"></textarea>
+              <sc-if value="{{ msgError }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px; font-weight:600; color:#E14B3B; margin-top:5px">{{ msgError }}</div></sc-if>
+            </div>
+            <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11px; font-weight:700; color:#E14B3B; margin-bottom:14px">{{ formError }}</div>
+            </sc-if>
+            <button onClick="{{ submit }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:11px 26px; border-radius:8px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12.5px; font-weight:700; box-shadow:0 8px 18px rgba(95,77,238,0.32)" style-hover="background:#4A39C9">Send to IT desk</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+          <div style="padding-top:20px">
+            <div style="width:46px; height:46px; border-radius:99px; background:#E5F6EF; display:grid; place-items:center; margin-bottom:16px">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            </div>
+            <h2 style="margin:0 0 10px; font-size:22px; font-weight:600; letter-spacing:-0.3px">Ticket {{ ticketId }} created</h2>
+            <p style="margin:0 0 24px; font-size:13px; font-weight:500; color:#8A8E9C; line-height:1.65">Thanks {{ sentName }} — the IT desk will reply to {{ sentEmail }} within one business day. Urgent? Call ext. 4410.</p>
+            <button onClick="{{ another }}" style="all:unset; cursor:pointer; font-size:11.5px; font-weight:700; color:#5F4DEE" style-hover="color:#4A39C9">← Send another request</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { cName: '', cEmail: '', cTopic: 'Account & access', cMsg: '', touched: {}, submitted: false, sent: null };
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  touch(k) { return () => this.setState(s => ({ touched: { ...s.touched, [k]: true } })); }
+  renderVals() {
+    const s = this.state;
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.cEmail);
+    const nameOk = s.cName.trim().length >= 2, msgOk = s.cMsg.trim().length >= 15;
+    const show = k => s.touched[k] || s.submitted;
+    const nameError = show('name') && !nameOk ? 'Tell us who you are.' : false;
+    const emailError = show('email') && s.cEmail && !emailOk ? '“' + s.cEmail + '” isn\'t a valid email.' : (show('email') && !s.cEmail ? 'Email is required so we can reply.' : false);
+    const msgError = show('msg') && !msgOk ? 'A little more detail helps — at least 15 characters.' : false;
+    const border = (err, val, ok) => err ? '#E14B3B' : (val && ok ? '#2B2D33' : '#DADDE8');
+    const valid = nameOk && emailOk && msgOk;
+    return {
+      cName: s.cName, cEmail: s.cEmail, cTopic: s.cTopic, cMsg: s.cMsg,
+      setCName: this.set('cName'), setCEmail: this.set('cEmail'), setCTopic: this.set('cTopic'), setCMsg: this.set('cMsg'),
+      touchName: this.touch('name'), touchEmail: this.touch('email'), touchMsg: this.touch('msg'),
+      nameError, emailError, msgError,
+      nameBorder: border(nameError, s.cName, nameOk),
+      emailBorder: border(emailError, s.cEmail, emailOk),
+      msgBorder: border(msgError, s.cMsg, msgOk),
+      formError: s.submitted && !valid ? 'Fix the highlighted fields to send your request.' : false,
+      submit: () => { if (!valid) { this.setState({ submitted: true }); return; } this.setState({ sent: { id: 'IT-' + Math.floor(1000 + Math.random() * 9000), name: s.cName.split(' ')[0], email: s.cEmail } }); },
+      notSent: !s.sent, sent: !!s.sent,
+      ticketId: s.sent ? s.sent.id : '', sentName: s.sent ? s.sent.name : '', sentEmail: s.sent ? s.sent.email : '',
+      another: () => this.setState({ sent: null, cMsg: '', submitted: false, touched: {} }),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

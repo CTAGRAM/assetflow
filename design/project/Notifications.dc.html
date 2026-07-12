@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder{color:#A2A3AE} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:12px; font-weight:600; color:#3F4046; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Notifications &amp; Activity">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="notifications" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Notifications &amp; Activity</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">Your feed as {{ meName }}, plus the org-wide audit trail.</div>
+      </div>
+      <div style="display:flex; gap:2px; background:#17171C; border-radius:99px; padding:4px">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+          <button onClick="{{ t.pick }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:99px; font-family:inherit; font-size:12px; font-weight:700; color:{{ t.color }}; background:{{ t.bg }}">{{ t.label }}
+            <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="background:#E14B3B; color:#fff; font-size:9.5px; font-weight:800; border-radius:99px; padding:1px 6px">{{ t.badge }}</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <sc-if value="{{ tabFeed }}" hint-placeholder-val="{{ true }}">
+      <div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap">
+        <sc-for list="{{ feedFilters }}" as="f" hint-placeholder-count="5">
+          <button onClick="{{ f.pick }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:7px 14px; border-radius:99px; font-family:inherit; font-size:11px; font-weight:700; background:{{ f.bg }}; color:{{ f.ink }}; border:1.5px solid {{ f.border }}" style-hover="border-color:#5F4DEE">{{ f.label }}</button>
+        </sc-for>
+        <button onClick="{{ markAll }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:11px; font-weight:800; color:#5F4DEE; padding:7px 4px" style-hover="color:#4A39C9">Mark all as read</button>
+      </div>
+      <sc-if value="{{ hasFeed }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff; border-radius:22px; overflow:hidden">
+          <sc-for list="{{ feed }}" as="n" hint-placeholder-count="8">
+            <button onClick="{{ n.read }}" style="all:unset; box-sizing:border-box; cursor:pointer; width:100%; display:flex; gap:12px; align-items:flex-start; padding:13px 18px; border-bottom:1px solid #F6F6F9; background:{{ n.bg }}" style-hover="background:#F7F7FC">
+              <span style="width:34px; height:34px; border-radius:11px; background:{{ n.iconBg }}; display:grid; place-items:center; flex:none; margin-top:1px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ n.iconC }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.icon }}"></path></svg>
+              </span>
+              <span style="flex:1; min-width:0; text-align:left">
+                <span style="display:flex; align-items:center; gap:7px">
+                  <span style="font-size:12.5px; font-weight:{{ n.weight }}">{{ n.title }}</span>
+                  <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="width:7px; height:7px; border-radius:99px; background:#5F4DEE; flex:none"></span></sc-if>
+                </span>
+                <span style="display:block; font-size:11.5px; font-weight:500; color:#6B6C75; margin-top:2px; line-height:1.5">{{ n.body }}</span>
+              </span>
+              <span style="font-size:10px; font-weight:600; color:#A2A3AE; flex:none">{{ n.time }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noFeed }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border-radius:22px; padding:52px 20px; text-align:center">
+          <div style="width:52px; height:52px; border-radius:99px; background:#F1F1F6; display:grid; place-items:center; margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"></path></svg></div>
+          <div style="font-size:14px; font-weight:800">{{ emptyFeedTitle }}</div>
+          <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:4px">{{ emptyFeedBody }}</div>
+        </div>
+      </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ACTIVITY LOG -->
+    <sc-if value="{{ tabLog }}" hint-placeholder-val="{{ false }}">
+      <div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap">
+        <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px; width:210px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+          <input value="{{ logQ }}" onChange="{{ setLogQ }}" placeholder="Search the log…" style="all:unset; flex:1; font-family:inherit; font-size:11.5px; font-weight:600; color:#17171C">
+        </div>
+        <label style="display:flex; align-items:center; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px">
+          <select value="{{ logUser }}" onChange="{{ setLogUser }}"><option value="">All users</option><sc-for list="{{ userOptions }}" as="u" hint-placeholder-count="12"><option value="{{ u.id }}">{{ u.name }}</option></sc-for></select>
+        </label>
+        <label style="display:flex; align-items:center; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px">
+          <select value="{{ logEntity }}" onChange="{{ setLogEntity }}"><option value="">All entities</option><option>Allocation</option><option>Transfer</option><option>Return</option><option>Booking</option><option>Maintenance</option><option>Audit</option></select>
+        </label>
+        <label style="display:flex; align-items:center; gap:7px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:7px 14px">
+          <span style="font-size:10px; font-weight:800; color:#A2A3AE; text-transform:uppercase; letter-spacing:0.4px">Since</span>
+          <input type="date" value="{{ logSince }}" onChange="{{ setLogSince }}" style="all:unset; font-family:inherit; font-size:11.5px; font-weight:600; color:#17171C">
+        </label>
+        <span style="margin-left:auto; font-size:11.5px; font-weight:700; color:#A2A3AE">{{ logCount }}</span>
+      </div>
+      <sc-if value="{{ hasLog }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff; border-radius:22px; overflow:hidden">
+          <div style="display:grid; grid-template-columns:150px 170px 110px 1fr; gap:10px; padding:12px 18px; border-bottom:1px solid #F1F1F5; font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#A2A3AE">
+            <span>When</span><span>Who</span><span>Entity</span><span>What happened</span>
+          </div>
+          <sc-for list="{{ logRows }}" as="l" hint-placeholder-count="12">
+            <div style="display:grid; grid-template-columns:150px 170px 110px 1fr; gap:10px; align-items:center; padding:9px 18px; border-bottom:1px solid #F6F6F9">
+              <span style="font-size:11px; font-weight:600; color:#6B6C75; font-variant-numeric:tabular-nums">{{ l.when }}</span>
+              <span style="display:flex; align-items:center; gap:8px">
+                <span style="width:24px; height:24px; border-radius:99px; background:{{ l.avBg }}; color:{{ l.avInk }}; display:grid; place-items:center; font-size:8px; font-weight:800; flex:none">{{ l.init }}</span>
+                <span style="font-size:11.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ l.who }}</span>
+              </span>
+              <span><span style="font-size:9.5px; font-weight:800; border-radius:99px; padding:3px 9px; background:{{ l.entBg }}; color:{{ l.entInk }}">{{ l.entity }}</span></span>
+              <span style="font-size:11.5px; font-weight:500; color:#3F4046; line-height:1.45">{{ l.what }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noLog }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border-radius:22px; padding:52px 20px; text-align:center">
+          <div style="font-size:14px; font-weight:800">No log entries match</div>
+          <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:4px">Loosen the user, entity, or date filters to see more of the trail.</div>
+        </div>
+      </sc-if>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'feed', readOv: {}, feedType: '', logQ: '', logUser: '', logEntity: '', logSince: '' };
+  componentDidMount() { if (location.hash === '#log') this.setState({ tab: 'log' }); }
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  renderVals() {
+    const AF = window.AF; if (!AF) return {};
+    const s = this.state, me = AF.me();
+
+    const icons = {
+      alert: 'M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01',
+      swap: 'M17 3l4 4-4 4M21 7H9M7 21l-4-4 4-4M3 17h12',
+      wrench: 'M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z',
+      calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z',
+      clipboard: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2H9zM9 14l2 2 4-4',
+      box: 'M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8',
+    };
+    const iconColors = { overdue: ['#FDECEA', '#E14B3B'], transfer: ['#E9EFFC', '#2456C4'], maintenance: ['#FBF1E0', '#A65B04'], booking: ['#EEEBFE', '#5F4DEE'], audit: ['#EFEAF9', '#6D4FC2'], assigned: ['#E5F6EF', '#157A57'] };
+
+    const mine = AF.notifications.filter(n => n.for.indexOf(me.id) >= 0);
+    const isUnread = n => s.readOv[n.id] === undefined ? n.unread : false;
+    const unreadCount = mine.filter(isUnread).length;
+
+    const types = [['', 'All'], ['overdue', 'Overdue'], ['transfer', 'Transfers'], ['maintenance', 'Maintenance'], ['booking', 'Bookings'], ['audit', 'Audits']];
+    const feedFilters = types.map(t => {
+      const on = s.feedType === t[0];
+      return { label: t[1], bg: on ? '#17171C' : '#fff', ink: on ? '#fff' : '#3F4046', border: on ? '#17171C' : '#E7E7EE',
+        pick: () => this.setState({ feedType: t[0] }) };
+    });
+
+    const pool = mine.filter(n => !s.feedType || n.type === s.feedType || (s.feedType === 'assigned' && n.type === 'assigned'))
+      .sort((a, b) => a.time < b.time ? 1 : -1);
+    const feed = pool.map(n => {
+      const un = isUnread(n), c = iconColors[n.type] || iconColors.booking;
+      return { title: n.title, body: n.body, time: AF.fmtDateTime(n.time),
+        icon: icons[n.icon] || icons.box, iconBg: c[0], iconC: c[1],
+        unread: un, weight: un ? 800 : 600, bg: un ? '#FCFCFF' : 'transparent',
+        read: () => this.setState({ readOv: { ...s.readOv, [n.id]: true } }) };
+    });
+
+    const tabs = [['feed', 'Notifications'], ['log', 'Activity log']].map(t => ({
+      label: t[1], badge: t[0] === 'feed' && unreadCount ? unreadCount : false,
+      color: s.tab === t[0] ? '#fff' : '#9A9AA5', bg: s.tab === t[0] ? '#5F4DEE' : 'transparent',
+      pick: () => this.setState({ tab: t[0] }) }));
+
+    // log
+    const entC = { Allocation: ['#E9EFFC', '#2456C4'], Transfer: ['#EEEBFE', '#4A39C9'], Return: ['#E5F6EF', '#157A57'], Booking: ['#EFEAF9', '#6D4FC2'], Maintenance: ['#FBF1E0', '#A65B04'], Audit: ['#FDECEA', '#C0331F'] };
+    const q = s.logQ.trim().toLowerCase();
+    const logPool = AF.activity.filter(e =>
+      (!q || e[3].toLowerCase().indexOf(q) >= 0 || AF.empName(e[1]).toLowerCase().indexOf(q) >= 0) &&
+      (!s.logUser || e[1] === s.logUser) && (!s.logEntity || e[2] === s.logEntity) &&
+      (!s.logSince || e[0].slice(0, 10) >= s.logSince));
+    const logRows = logPool.map(e => ({
+      when: AF.fmtDateTime(e[0]), who: AF.empName(e[1]), what: e[3], entity: e[2],
+      init: e[1] === 'system' ? 'SY' : AF.initials(AF.empName(e[1])),
+      avBg: e[1] === 'system' ? '#F1F1F6' : AF.avatarBg(e[1]),
+      avInk: e[1] === 'system' ? '#6B6C75' : AF.avatarInk(e[1]),
+      entBg: (entC[e[2]] || entC.Booking)[0], entInk: (entC[e[2]] || entC.Booking)[1],
+    }));
+    const userOptions = [{ id: 'system', name: 'System' }].concat(AF.employees.map(e => ({ id: e.id, name: e.name })));
+
+    return {
+      meName: me.name, tabs,
+      tabFeed: s.tab === 'feed', tabLog: s.tab === 'log',
+      feedFilters, feed, hasFeed: feed.length > 0, noFeed: feed.length === 0,
+      emptyFeedTitle: s.feedType ? 'No ' + s.feedType + ' notifications' : 'You\'re all caught up',
+      emptyFeedBody: s.feedType ? 'Nothing of this type in your feed — try another filter.' : 'New alerts about your assets, bookings, and approvals will land here.',
+      markAll: () => { const ov = { ...s.readOv }; mine.forEach(n => ov[n.id] = true); this.setState({ readOv: ov }); },
+      logQ: s.logQ, setLogQ: this.set('logQ'), logUser: s.logUser, setLogUser: this.set('logUser'),
+      logEntity: s.logEntity, setLogEntity: this.set('logEntity'), logSince: s.logSince, setLogSince: this.set('logSince'),
+      userOptions, logRows, hasLog: logRows.length > 0, noLog: logRows.length === 0,
+      logCount: logRows.length + ' of ' + AF.activity.length + ' events',
+    };
+  }
+}
+
+</script>
+</body>
+</html>
