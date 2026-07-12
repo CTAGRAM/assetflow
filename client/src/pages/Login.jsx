@@ -191,6 +191,24 @@ export default function Login() {
                 {isSignup && (
                   <div style={{ fontSize: 10.5, fontWeight: 500, color: '#AEB2C2', marginTop: 18, maxWidth: 340, lineHeight: 1.55 }}>New accounts start as <b style={{ color: '#7A7E8C' }}>Employee</b> — an Admin promotes roles from the Employee Directory.</div>
                 )}
+
+                {isLogin && (
+                  <div style={{ marginTop: 26, maxWidth: 360, background: '#F6F5FE', border: '1px solid #E4E1FA', borderRadius: 10, padding: '12px 14px' }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '0.6px', color: '#5F4DEE', textTransform: 'uppercase', marginBottom: 8 }}>Demo accounts — click to fill</div>
+                    {[
+                      ['Admin', 'maya.okafor@northwind.io'],
+                      ['Asset Manager', 'daniel.reyes@northwind.io'],
+                      ['Employee', 'aisha.bello@northwind.io'],
+                    ].map(([label, mail]) => (
+                      <button key={mail} onClick={() => { setEmail(mail); setPw('assetflow'); }}
+                        style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', gap: 10, width: '100%', padding: '4px 2px', fontSize: 11, fontWeight: 600, color: '#4B4E5C' }}>
+                        <span style={{ color: '#7A7E8C' }}>{label}</span>
+                        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10.5 }}>{mail}</span>
+                      </button>
+                    ))}
+                    <div style={{ fontSize: 10, fontWeight: 500, color: '#8A8E9C', marginTop: 6 }}>Shared password: <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>assetflow</span></div>
+                  </div>
+                )}
               </div>
             ) : (
               <div>
