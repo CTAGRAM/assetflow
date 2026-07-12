@@ -5,6 +5,10 @@ import { router as orgRouter } from './org.js';
 import { router as assetsRouter } from './assets.js';
 import { router as allocationsRouter } from './allocations.js';
 import { router as bookingsRouter } from './bookings.js';
+import { router as maintenanceRouter } from './maintenance.js';
+import { router as auditsRouter } from './audits.js';
+import { router as reportsRouter } from './reports.js';
+import { router as notificationsRouter } from './notifications.js';
 
 const app = express();
 app.use(express.json());
@@ -19,6 +23,10 @@ app.use('/api', orgRouter);          // /departments /categories /employees
 app.use('/api/assets', assetsRouter);
 app.use('/api', allocationsRouter);  // /allocations /transfers
 app.use('/api/bookings', bookingsRouter);
+app.use('/api/maintenance', maintenanceRouter);
+app.use('/api/audits', auditsRouter);
+app.use('/api/reports', reportsRouter);
+app.use('/api', notificationsRouter);  // /notifications /activity
 
 app.use((err, _req, res, _next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Request body is not valid JSON.' });
