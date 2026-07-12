@@ -57,7 +57,8 @@ export default function Notifications() {
     return () => { alive = false; };
   }, []);
 
-  const mine = notifications ? notifications.filter((n) => n.for.indexOf(me.id) >= 0) : [];
+  // live API rows are already scoped to the signed-in user; `for` only exists on demo rows
+  const mine = notifications ? notifications.filter((n) => !n.for || n.for.indexOf(me.id) >= 0) : [];
   const isUnread = (n) => (readOv[n.id] === undefined ? n.unread : false);
   const unreadCount = mine.filter(isUnread).length;
 

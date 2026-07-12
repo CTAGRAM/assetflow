@@ -209,7 +209,18 @@ export function getAsset(tag) {
   return read(path, () => demo.assets.find((a) => a.tag === tag) || null, (r) => (r ? normalizeAsset(r) : null));
 }
 export function getCategories() {
-  return read('/categories', () => demo.categories, (rows) => { rememberCategories(rows); return rows; });
+  return read('/categories', () => demo.categories, (rows) => {
+    rememberCategories(rows);
+    // superset shape: raw API fields plus the aliases the Organization screen reads
+    return rows.map((c) => ({
+      ...c,
+      count: Number(c.asset_count ?? 0),
+      active: c.is_active !== false,
+      fields: (c.extra_fields || []).map((f) => ({
+        key: f.key ?? f.name, label: f.label ?? f.name ?? f.key, type: f.type || 'text',
+      })),
+    }));
+  });
 }
 export async function createAsset(asset) {
   // Resolve the live integer category_id from the demo slug's display name.
@@ -309,12 +320,194 @@ export function getNotifications() {
   return read('/notifications', () => demo.notifications, (rows) => rows);
 }
 
+// ================== live-shape adapters for the remaining screens ==========
+// (Organization / Maintenance / Audits / Reports / Notifications were built
+// against the prototype's demo shapes; these map the API's rows into supersets
+// of that shape so the screens render unchanged.)
+
+const num = (id) => String(id).replace(/\D/g, '');
+const title = (s) => (s || '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+export function markNotificationRead(id) {
+  return request('/notifications/' + num(id) + '/read', { method: 'POST' });
+}
+export function markAllNotificationsRead() {
+  return request('/notifications/read-all', { method: 'POST' });
+}
+
+const NOTIF_KIND = (t) =>
+  t.startsWith('booking') ? 'booking' : t.startsWith('maintenance') ? 'maintenance'
+  : t.startsWith('transfer') ? 'transfer' : t.startsWith('audit') ? 'audit'
+  : t === 'overdue_return' ? 'overdue' : 'assigned';
+const NOTIF_ICON = { booking: 'calendar', maintenance: 'wrench', transfer: 'swap', audit: 'clipboard', overdue: 'alert', assigned: 'box' };
+
+export function getNotificationsLive() {
+  return request('/notifications').then((data) => (data.notifications || []).map((n) => {
+    const kind = NOTIF_KIND(n.type);
+    const p = n.payload || {};
+    return {
+      ...n, type: kind, icon: NOTIF_ICON[kind],
+      title: `${title(n.type)}${p.asset ? ' — ' + p.asset : ''}`,
+      body: [p.asset, p.by && `by ${p.by}`, p.due && `due ${String(p.due).slice(0, 10)}`,
+             p.starts_at && `starts ${new Date(p.starts_at).toLocaleString()}`]
+        .filter(Boolean).join(' · ') || title(n.type),
+      time: n.created_at, unread: !n.read_at,
+    };
+  }));
+}
+
+export function getActivity(params) {
+  return request('/activity' + qs(params)).then((rows) => rows.map((r) => [
+    (r.created_at || '').replace('T', ' ').slice(0, 16),
+    r.actor_name || 'system',
+    title(r.entity),
+    `${title(r.action)} ${r.entity} ${r.entity_id ?? ''}`.trim(),
+  ]));
+}
+
+// --- organization writes ---
+export function createDepartment(payload) {
+  return request('/departments', {
+    method: 'POST',
+    body: { name: payload.name, parent_id: payload.parent_id ?? null, head_id: payload.head_id ?? null },
+  });
+}
+export function updateDepartment(id, patch) {
+  const body = { ...patch };
+  if ('active' in body) { body.is_active = body.active; delete body.active; }
+  return request('/departments/' + num(id), { method: 'PATCH', body });
+}
+export function createCategory(payload) {
+  return request('/categories', {
+    method: 'POST',
+    body: { name: payload.name, extra_fields: payload.fields ?? payload.extra_fields ?? [] },
+  });
+}
+export function updateCategory(id, patch) {
+  const body = { ...patch };
+  if ('fields' in body) { body.extra_fields = body.fields; delete body.fields; }
+  if ('active' in body) { body.is_active = body.active; delete body.active; }
+  return request('/categories/' + num(id), { method: 'PATCH', body });
+}
+const ROLE_ENUM = { admin: 'admin', 'asset manager': 'asset_manager', 'dept head': 'department_head', 'department head': 'department_head', employee: 'employee' };
+export function updateEmployee(id, patch) {
+  const body = { ...patch };
+  if (body.role) body.role = ROLE_ENUM[String(body.role).toLowerCase()] || body.role;
+  if ('active' in body) { body.is_active = body.active; delete body.active; }
+  return request('/employees/' + num(id), { method: 'PATCH', body });
+}
+
+// --- maintenance ---
+const STAGE = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected', assigned: 'Technician Assigned', in_progress: 'In Progress', resolved: 'Resolved' };
+function normalizeMaintenance(m) {
+  const hist = [[String(m.created_at).slice(0, 10), `Raised by ${m.raised_by_name || 'employee'}`]];
+  if (m.decided_by_name) hist.push([String(m.created_at).slice(0, 10), `${m.status === 'rejected' ? 'Rejected' : 'Approved'} by ${m.decided_by_name}`]);
+  if (m.technician) hist.push([String(m.created_at).slice(0, 10), `Technician assigned — ${m.technician}`]);
+  if (m.resolved_at) hist.push([String(m.resolved_at).slice(0, 10), 'Resolved']);
+  return {
+    ...m, asset: m.tag, by: m.raised_by_name, date: String(m.created_at).slice(0, 10),
+    priority: title(m.priority), stage: STAGE[m.status] || title(m.status),
+    tech: m.technician, issue: m.description, photo: !!m.photo_url,
+    resolved: m.resolved_at ? String(m.resolved_at).slice(0, 10) : undefined, history: hist,
+  };
+}
+export function getMaintenance(params) {
+  return request('/maintenance' + qs(params)).then((rows) => rows.map(normalizeMaintenance));
+}
+export async function createMaintenance(payload) {
+  await ensureAssets();
+  const asset_id = cache.assetIdByTag[payload.asset] ?? payload.asset_id;
+  const created = await request('/maintenance', {
+    method: 'POST',
+    body: { asset_id, description: payload.issue ?? payload.description, priority: String(payload.priority || 'medium').toLowerCase(), photo_url: payload.photo_url ?? null },
+  });
+  return { ok: true, maintenance: normalizeMaintenance(created) };
+}
+export function decideMaintenance(id, payload) {
+  const approve = typeof payload === 'boolean' ? payload : !!(payload && payload.approve);
+  return request('/maintenance/' + num(id) + '/decide', { method: 'POST', body: { approve } }).then(normalizeMaintenance);
+}
+export function assignMaintenance(id, payload) {
+  const technician = typeof payload === 'string' ? payload : payload && (payload.technician ?? payload.tech);
+  return request('/maintenance/' + num(id) + '/assign', { method: 'POST', body: { technician } }).then(normalizeMaintenance);
+}
+export function startMaintenance(id) {
+  return request('/maintenance/' + num(id) + '/start', { method: 'POST' }).then(normalizeMaintenance);
+}
+export function resolveMaintenance(id) {
+  return request('/maintenance/' + num(id) + '/resolve', { method: 'POST' }).then(normalizeMaintenance);
+}
+
+// --- audits ---
+function normalizeAuditCycle(a) {
+  return {
+    ...a, name: a.name,
+    scopeType: a.location ? 'Location' : a.department_name ? 'Department' : 'All',
+    scope: a.location || a.department_name || 'All assets',
+    dept: a.department_id, from: String(a.starts_on).slice(0, 10), to: String(a.ends_on).slice(0, 10),
+    auditors: a.auditors || [], status: a.closed_at ? 'Closed' : 'In Progress',
+    closed: a.closed_at ? String(a.closed_at).slice(0, 10) : undefined,
+    items: (a.assets || []).map((x) => ({
+      asset: x.tag, asset_id: x.id, result: x.result ? title(x.result) : null, note: x.notes || '',
+    })),
+  };
+}
+export function getAudits() {
+  return request('/audits').then((rows) => rows.map(normalizeAuditCycle));
+}
+export function getAudit(id) {
+  return request('/audits/' + num(id)).then(normalizeAuditCycle);
+}
+export async function createAudit(payload) {
+  const auditor_ids = await Promise.all((payload.auditors || payload.auditor_ids || []).map(resolveUserId));
+  return request('/audits', {
+    method: 'POST',
+    body: {
+      name: payload.name,
+      starts_on: payload.from ?? payload.starts_on, ends_on: payload.to ?? payload.ends_on,
+      location: payload.scopeType === 'Location' ? payload.scope : null,
+      department_id: payload.scopeType === 'Department' ? (payload.department_id ?? payload.dept ?? null) : null,
+      auditor_ids,
+    },
+  });
+}
+export async function saveAuditRecord(id, payload) {
+  await ensureAssets();
+  const asset_id = payload.asset_id ?? cache.assetIdByTag[payload.asset];
+  return request('/audits/' + num(id) + '/records', {
+    method: 'POST',
+    body: { asset_id, result: String(payload.result || '').toLowerCase(), notes: payload.note ?? payload.notes ?? null },
+  });
+}
+export function getAuditDiscrepancies(id) {
+  return request('/audits/' + num(id) + '/discrepancies');
+}
+export function closeAudit(id) {
+  return request('/audits/' + num(id) + '/close', { method: 'POST' });
+}
+
+// --- reports ---
+export function getReportSummary() { return request('/reports/summary'); }
+export function getReportUtilization() { return request('/reports/utilization'); }
+export function getReportHeatmap() { return request('/reports/booking-heatmap'); }
+
+function qs(params) {
+  if (!params) return '';
+  const p = Object.entries(params).filter(([, v]) => v != null && v !== '');
+  return p.length ? '?' + p.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&') : '';
+}
+
 const api = {
   BASE, request, getToken, setToken, clearToken,
   login, signup, me, logout,
   getAssets, getAsset, getCategories, createAsset,
   getAllocations, getTransfers, allocateAsset, returnAsset, requestTransfer, decideTransfer,
   getBookings, createBooking, cancelBooking, rescheduleBooking,
-  getEmployees, getDepartments, getNotifications,
+  getEmployees, getDepartments,
+  getNotifications: getNotificationsLive, markNotificationRead, markAllNotificationsRead, getActivity,
+  createDepartment, updateDepartment, createCategory, updateCategory, updateEmployee,
+  getMaintenance, createMaintenance, decideMaintenance, assignMaintenance, startMaintenance, resolveMaintenance,
+  getAudits, getAudit, createAudit, saveAuditRecord, getAuditDiscrepancies, closeAudit,
+  getReportSummary, getReportUtilization, getReportHeatmap,
 };
 export default api;

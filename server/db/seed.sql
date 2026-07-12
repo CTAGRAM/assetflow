@@ -9,9 +9,7 @@
 -- Re-runnable: it truncates every table and restarts identities first, so you
 -- can reload it as often as you like during the demo.
 --
--- Password hashes are ONE shared placeholder that does NOT verify against any
--- password. Lead: replace `password_hash` with real bcrypt hashes before auth
--- goes live (intended demo password is "assetflow").
+-- Every user shares the demo password "assetflow" (real bcrypt hash below).
 --
 -- Key invariant: assets are inserted in tag order with id/tag left to the
 -- sequences, so asset id N == tag AF-000N. Every asset foreign key below
@@ -50,24 +48,24 @@ insert into departments (name, parent_id, is_active) values
 -- Users — 18 people across all four roles. Shared placeholder password hash.
 -- ---------------------------------------------------------------------------
 insert into users (name, email, password_hash, role, department_id, is_active, created_at) values
-  ('Maya Okafor',     'maya.okafor@northwind.io',  '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'admin',           3, true,  '2023-01-05 09:00+00'), -- 1
-  ('Daniel Reyes',    'daniel.reyes@northwind.io', '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'asset_manager',   3, true,  '2023-01-06 09:00+00'), -- 2
-  ('Lena Vogel',      'lena.vogel@northwind.io',   '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'asset_manager',   6, true,  '2023-02-01 09:00+00'), -- 3
-  ('Priya Sharma',    'priya.sharma@northwind.io', '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'department_head', 1, true,  '2023-02-14 09:00+00'), -- 4
-  ('Marcus Webb',     'marcus.webb@northwind.io',  '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'department_head', 2, true,  '2023-03-01 09:00+00'), -- 5
-  ('Sofia Lindqvist', 'sofia.l@northwind.io',      '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'department_head', 3, true,  '2023-03-15 09:00+00'), -- 6
-  ('Hannah Park',     'hannah.park@northwind.io',  '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'department_head', 4, true,  '2023-04-02 09:00+00'), -- 7
-  ('Omar Haddad',     'omar.haddad@northwind.io',  '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'department_head', 5, true,  '2023-04-20 09:00+00'), -- 8
-  ('Tom Becker',      'tom.becker@northwind.io',   '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        1, true,  '2023-06-01 09:00+00'), -- 9
-  ('Aisha Bello',     'aisha.bello@northwind.io',  '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        1, true,  '2023-09-11 09:00+00'), -- 10
-  ('Kenji Sato',      'kenji.sato@northwind.io',   '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        1, true,  '2024-01-08 09:00+00'), -- 11
-  ('Jonas Meier',     'jonas.meier@northwind.io',  '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        2, true,  '2023-07-17 09:00+00'), -- 12
-  ('Leo Martins',     'leo.martins@northwind.io',  '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        2, true,  '2024-02-26 09:00+00'), -- 13
-  ('Rosa Delgado',    'rosa.delgado@northwind.io', '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        3, true,  '2023-05-22 09:00+00'), -- 14
-  ('Femke de Vries',  'femke.dv@northwind.io',     '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        4, true,  '2023-08-30 09:00+00'), -- 15
-  ('Nina Petrova',    'nina.petrova@northwind.io', '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        5, true,  '2024-03-04 09:00+00'), -- 16
-  ('Sam O''Neill',    'sam.oneill@northwind.io',   '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        6, true,  '2023-10-09 09:00+00'), -- 17
-  ('Grace Tan',       'grace.tan@northwind.io',    '$2b$12$Q8sV6oXpL3nR1tK7uY9uOe5mN2bC4dF6gH8jK0lM2nP4qR6sT8uWa', 'employee',        3, false, '2022-11-15 09:00+00'); -- 18 offboarded
+  ('Maya Okafor',     'maya.okafor@northwind.io',  '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'admin',           3, true,  '2023-01-05 09:00+00'), -- 1
+  ('Daniel Reyes',    'daniel.reyes@northwind.io', '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'asset_manager',   3, true,  '2023-01-06 09:00+00'), -- 2
+  ('Lena Vogel',      'lena.vogel@northwind.io',   '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'asset_manager',   6, true,  '2023-02-01 09:00+00'), -- 3
+  ('Priya Sharma',    'priya.sharma@northwind.io', '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'department_head', 1, true,  '2023-02-14 09:00+00'), -- 4
+  ('Marcus Webb',     'marcus.webb@northwind.io',  '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'department_head', 2, true,  '2023-03-01 09:00+00'), -- 5
+  ('Sofia Lindqvist', 'sofia.l@northwind.io',      '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'department_head', 3, true,  '2023-03-15 09:00+00'), -- 6
+  ('Hannah Park',     'hannah.park@northwind.io',  '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'department_head', 4, true,  '2023-04-02 09:00+00'), -- 7
+  ('Omar Haddad',     'omar.haddad@northwind.io',  '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'department_head', 5, true,  '2023-04-20 09:00+00'), -- 8
+  ('Tom Becker',      'tom.becker@northwind.io',   '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        1, true,  '2023-06-01 09:00+00'), -- 9
+  ('Aisha Bello',     'aisha.bello@northwind.io',  '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        1, true,  '2023-09-11 09:00+00'), -- 10
+  ('Kenji Sato',      'kenji.sato@northwind.io',   '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        1, true,  '2024-01-08 09:00+00'), -- 11
+  ('Jonas Meier',     'jonas.meier@northwind.io',  '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        2, true,  '2023-07-17 09:00+00'), -- 12
+  ('Leo Martins',     'leo.martins@northwind.io',  '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        2, true,  '2024-02-26 09:00+00'), -- 13
+  ('Rosa Delgado',    'rosa.delgado@northwind.io', '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        3, true,  '2023-05-22 09:00+00'), -- 14
+  ('Femke de Vries',  'femke.dv@northwind.io',     '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        4, true,  '2023-08-30 09:00+00'), -- 15
+  ('Nina Petrova',    'nina.petrova@northwind.io', '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        5, true,  '2024-03-04 09:00+00'), -- 16
+  ('Sam O''Neill',    'sam.oneill@northwind.io',   '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        6, true,  '2023-10-09 09:00+00'), -- 17
+  ('Grace Tan',       'grace.tan@northwind.io',    '$2b$10$ORbE85sfYYjH.JbraTNJpO5QtDnRxwmO/0ENoSKcE39R5aW5zI42S', 'employee',        3, false, '2022-11-15 09:00+00'); -- 18 offboarded
 
 -- Wire up department heads now that the users exist.
 update departments set head_id = 4 where id = 1;  -- Priya heads Engineering
