@@ -9,6 +9,7 @@ import { router as maintenanceRouter } from './maintenance.js';
 import { router as auditsRouter } from './audits.js';
 import { router as reportsRouter } from './reports.js';
 import { router as notificationsRouter } from './notifications.js';
+import { startJobs } from './jobs.js';
 
 const app = express();
 app.use(express.json());
@@ -45,3 +46,4 @@ app.use((err, _req, res, _next) => {
 
 const port = process.env.PORT ?? 3000;
 app.listen(port, () => console.log(`AssetFlow API on :${port}`));
+startJobs();
