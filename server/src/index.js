@@ -1,4 +1,7 @@
 import express from 'express';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { query } from './db.js';
 import { router as authRouter } from './auth.js';
 import { router as orgRouter } from './org.js';
@@ -37,6 +40,16 @@ app.use('/api/maintenance', maintenanceRouter);
 app.use('/api/audits', auditsRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api', notificationsRouter);  // /notifications /activity
+
+// production: serve the built client from this same server, one origin, no CORS
+const clientDist = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../client/dist');
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api')) return res.sendFile(path.join(clientDist, 'index.html'));
+    next();
+  });
+}
 
 app.use((err, _req, res, _next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Request body is not valid JSON.' });

@@ -12,5 +12,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.13.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

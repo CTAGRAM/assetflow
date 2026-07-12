@@ -24,7 +24,9 @@
 
 import * as demo from './data.js';
 
-export const BASE = 'http://localhost:3000/api';
+// dev: Vite on :5173 talks to the API on :3000. Production build is served by
+// the API server itself, so the path is same-origin.
+export const BASE = import.meta.env.DEV ? 'http://localhost:3000/api' : '/api';
 
 // ---------------------------------------------------------------- session ---
 const TOKEN_KEY = 'af_token';
