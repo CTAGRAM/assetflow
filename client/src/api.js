@@ -154,6 +154,112 @@ export function getNotifications() {
   // TODO: return request('/notifications');
   return demo('notifications.list', demoData.notifications);
 }
+export function markNotificationRead(id) {
+  // TODO: return request('/notifications/' + encodeURIComponent(id) + '/read', { method: 'POST' });
+  return demo('notifications.read', { ok: true, id });
+}
+export function markAllNotificationsRead() {
+  // TODO: return request('/notifications/read-all', { method: 'POST' });
+  return demo('notifications.readAll', { ok: true });
+}
+export function getActivity(params) {
+  // TODO: return request('/activity' + qs(params));
+  return demo('activity.list', demoData.activity);
+}
+
+// --- organization writes (Tanishq's Organization screen) ------------------
+// The Employee Directory PATCH is the ONLY place an Employee gets promoted.
+export function createDepartment(payload) {
+  // TODO: return request('/departments', { method: 'POST', body: payload });
+  return demo('departments.create', { ok: true, ...payload });
+}
+export function updateDepartment(id, patch) {
+  // TODO: return request('/departments/' + encodeURIComponent(id), { method: 'PATCH', body: patch });
+  return demo('departments.update', { ok: true, id, ...patch });
+}
+export function createCategory(payload) {
+  // TODO: return request('/categories', { method: 'POST', body: payload });
+  return demo('categories.create', { ok: true, ...payload });
+}
+export function updateCategory(id, patch) {
+  // TODO: return request('/categories/' + encodeURIComponent(id), { method: 'PATCH', body: patch });
+  return demo('categories.update', { ok: true, id, ...patch });
+}
+export function updateEmployee(id, patch) {
+  // TODO: return request('/employees/' + encodeURIComponent(id), { method: 'PATCH', body: patch });
+  return demo('employees.update', { ok: true, id, ...patch });
+}
+
+// --- maintenance (Tanishq's Maintenance screen) ---------------------------
+export function getMaintenance(params) {
+  // TODO: return request('/maintenance' + qs(params));
+  return demo('maintenance.list', demoData.maintenance);
+}
+export function createMaintenance(payload) {
+  // TODO: return request('/maintenance', { method: 'POST', body: payload });
+  return demo('maintenance.create', { ok: true, ...payload });
+}
+export function decideMaintenance(id, payload) {
+  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/decide', { method: 'POST', body: payload });
+  return demo('maintenance.decide', { ok: true, id, ...payload });
+}
+export function assignMaintenance(id, payload) {
+  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/assign', { method: 'POST', body: payload });
+  return demo('maintenance.assign', { ok: true, id, ...payload });
+}
+export function startMaintenance(id) {
+  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/start', { method: 'POST' });
+  return demo('maintenance.start', { ok: true, id });
+}
+export function resolveMaintenance(id) {
+  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/resolve', { method: 'POST' });
+  return demo('maintenance.resolve', { ok: true, id });
+}
+
+// --- audits (Tanishq's Audits screen) -------------------------------------
+export function getAudits() {
+  // TODO: return request('/audits');
+  return demo('audits.list', demoData.audits);
+}
+export function getAudit(id) {
+  // TODO: return request('/audits/' + encodeURIComponent(id));
+  return demo('audits.get', demoData.audits.find((a) => a.id === id) || null);
+}
+export function createAudit(payload) {
+  // TODO: return request('/audits', { method: 'POST', body: payload });
+  return demo('audits.create', { ok: true, ...payload });
+}
+export function saveAuditRecord(id, payload) {
+  // TODO: return request('/audits/' + encodeURIComponent(id) + '/records', { method: 'POST', body: payload });
+  return demo('audits.record', { ok: true, id, ...payload });
+}
+export function getAuditDiscrepancies(id) {
+  // TODO: return request('/audits/' + encodeURIComponent(id) + '/discrepancies');
+  const cyc = demoData.audits.find((a) => a.id === id) || { items: [] };
+  return demo('audits.discrepancies', cyc.items.filter((i) => i.result === 'Missing' || i.result === 'Damaged'));
+}
+export function closeAudit(id) {
+  // TODO: return request('/audits/' + encodeURIComponent(id) + '/close', { method: 'POST' });
+  return demo('audits.close', { ok: true, id });
+}
+
+// --- reports (Tanishq's Reports screen) -----------------------------------
+// The report cards recreate the prototype's exact visuals by computing over the
+// collections above (assets / bookings / maintenance / departments), so the
+// only report-specific endpoints are the optional pre-aggregated ones below.
+// When the backend lands, screens may switch to these or keep computing client
+// side — either way the reads still flow through this module.
+export function getReportSummary() {
+  // TODO: return request('/reports/summary');
+  return demo('reports.summary', {});
+}
+
+// small querystring helper for the GET endpoints above
+function qs(params) {
+  if (!params) return '';
+  const p = Object.entries(params).filter(([, v]) => v != null && v !== '');
+  return p.length ? '?' + p.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&') : '';
+}
 
 const api = {
   BASE, request, health,
@@ -162,5 +268,10 @@ const api = {
   getAllocations, getTransfers, allocateAsset, returnAsset, requestTransfer,
   getBookings, createBooking, cancelBooking, rescheduleBooking,
   getEmployees, getDepartments, getNotifications,
+  markNotificationRead, markAllNotificationsRead, getActivity,
+  createDepartment, updateDepartment, createCategory, updateCategory, updateEmployee,
+  getMaintenance, createMaintenance, decideMaintenance, assignMaintenance, startMaintenance, resolveMaintenance,
+  getAudits, getAudit, createAudit, saveAuditRecord, getAuditDiscrepancies, closeAudit,
+  getReportSummary,
 };
 export default api;
