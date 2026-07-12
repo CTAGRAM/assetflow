@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
-import Placeholder from './components/Placeholder.jsx';
 
 // My screens (Parth):
 import Explore from './pages/Explore.jsx';
@@ -16,6 +15,7 @@ import Maintenance from './pages/Maintenance.jsx';
 import Audits from './pages/Audits.jsx';
 import Reports from './pages/Reports.jsx';
 import Notifications from './pages/Notifications.jsx';
+import Contact from './pages/Contact.jsx';
 
 // Clean route paths the shell links to. The prototype used *.dc.html file
 // links; the app maps those to the routes below.
@@ -36,8 +36,7 @@ export default function App() {
         <Route path="/allocation" element={<Allocation />} />
         <Route path="/booking" element={<Booking />} />
 
-        {/* Screens owned by Tanishq — placeholders so the shell never
-            white-screens before his routes land. He replaces these. */}
+        {/* Screens owned by Tanishq, recreated from their *.dc.html prototypes. */}
         <Route path="/organization" element={<Organization />} />
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/audits" element={<Audits />} />
@@ -46,7 +45,7 @@ export default function App() {
       </Route>
 
       {/* Contact is a standalone marketing-style page (Tanishq) */}
-      <Route path="/contact" element={<Placeholder title="Contact IT" owner="Tanishq" bare />} />
+      <Route path="/contact" element={<Contact />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
