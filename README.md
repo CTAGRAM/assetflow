@@ -2,6 +2,8 @@
 
 Enterprise asset and resource management system, built for the Odoo Hackathon 2026 virtual round.
 
+**Live demo**: [https://assetflow-hchr.onrender.com](https://assetflow-hchr.onrender.com) — sign in with `maya.okafor@northwind.io` / `assetflow` (admin). Free-tier hosting sleeps when idle, so the first load can take up to a minute.
+
 AssetFlow answers three questions every organization struggles with: who holds which asset right now, is this room or vehicle free at 3 PM, and did that repair actually get approved before someone opened the machine. It replaces spreadsheets and paper logs with a single system covering asset lifecycle, allocation with conflict rules, time-slot resource booking, maintenance approval, periodic audit cycles, reports, and a live notification feed.
 
 ## Team
