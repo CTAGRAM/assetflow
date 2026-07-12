@@ -60,6 +60,12 @@ export async function request(path, { method = 'GET', body, headers, ...rest } =
   if (text) { try { payload = JSON.parse(text); } catch { payload = text; } }
 
   if (!res.ok) {
+    // expired or revoked session: clear it and hand the user back to login
+    if (res.status === 401 && getToken() && !path.startsWith('/auth/')) {
+      clearToken();
+      try { localStorage.removeItem('af_user'); } catch { /* ignore */ }
+      window.location.assign('/login');
+    }
     const err = new Error();
     err.status = res.status;
     err.payload = payload;
@@ -184,20 +190,29 @@ function normalizeEmployee(e) {
 
 // ===================================================================== AUTH ==
 // Signup always creates an employee; there is deliberately no role field.
+const USER_KEY = 'af_user';
+export function currentUser() {
+  try { return JSON.parse(localStorage.getItem(USER_KEY)); } catch { return null; }
+}
+function rememberUser(u) {
+  try { u ? localStorage.setItem(USER_KEY, JSON.stringify(u)) : localStorage.removeItem(USER_KEY); } catch { /* ignore */ }
+}
+
 export async function login(credentials) {
   const data = await request('/auth/login', { method: 'POST', body: credentials });
-  if (data && data.token) setToken(data.token);
+  if (data && data.token) { setToken(data.token); rememberUser(data.user); }
   return data; // { token, user }
 }
 export async function signup(details) {
   const data = await request('/auth/signup', { method: 'POST', body: details });
-  if (data && data.token) setToken(data.token);
+  if (data && data.token) { setToken(data.token); rememberUser(data.user); }
   return data; // { token, user }
 }
 export function me() {
-  return request('/auth/me');
+  // refresh the stored identity too, so a promotion shows up on next load
+  return request('/auth/me').then((d) => { if (d && d.user) rememberUser(d.user); return d; });
 }
-export function logout() { clearToken(); }
+export function logout() { clearToken(); rememberUser(null); }
 
 // =================================================================== ASSETS ==
 export function getAssets() {
@@ -314,7 +329,8 @@ export function getEmployees() {
   return read('/employees', () => demo.employees, (rows) => { rememberEmployees(rows); return rows.map(normalizeEmployee); });
 }
 export function getDepartments() {
-  return read('/departments', () => demo.departments, (rows) => rows.map((d) => ({ id: deptSlugByName(d.name), name: d.name, head: d.head_id, active: d.is_active !== false, memberCount: d.member_count })));
+  // dbId carries the real integer key for writes; id stays the slug the screens key on
+  return read('/departments', () => demo.departments, (rows) => rows.map((d) => ({ id: deptSlugByName(d.name), dbId: d.id, name: d.name, head: d.head_id, parent: d.parent_id, active: d.is_active !== false, memberCount: d.member_count })));
 }
 export function getNotifications() {
   return read('/notifications', () => demo.notifications, (rows) => rows);
@@ -416,7 +432,9 @@ export function getMaintenance(params) {
 }
 export async function createMaintenance(payload) {
   await ensureAssets();
-  const asset_id = cache.assetIdByTag[payload.asset] ?? payload.asset_id;
+  // screens pass either an asset tag (AF-0003) or a numeric id
+  const raw = payload.asset ?? payload.asset_id;
+  const asset_id = cache.assetIdByTag[raw] ?? (Number.isInteger(raw) ? raw : Number(num(raw)));
   const created = await request('/maintenance', {
     method: 'POST',
     body: { asset_id, description: payload.issue ?? payload.description, priority: String(payload.priority || 'medium').toLowerCase(), photo_url: payload.photo_url ?? null },
@@ -445,7 +463,9 @@ function normalizeAuditCycle(a) {
     scopeType: a.location ? 'Location' : a.department_name ? 'Department' : 'All',
     scope: a.location || a.department_name || 'All assets',
     dept: a.department_id, from: String(a.starts_on).slice(0, 10), to: String(a.ends_on).slice(0, 10),
-    auditors: a.auditors || [], status: a.closed_at ? 'Closed' : 'In Progress',
+    // list rows carry auditor names, detail rows carry {id, name} objects
+    auditors: (a.auditors || []).map((x) => (x && x.name) ? x.name : x),
+    status: a.closed_at ? 'Closed' : 'In Progress',
     closed: a.closed_at ? String(a.closed_at).slice(0, 10) : undefined,
     items: (a.assets || []).map((x) => ({
       asset: x.tag, asset_id: x.id, result: x.result ? title(x.result) : null, note: x.notes || '',
@@ -472,11 +492,14 @@ export async function createAudit(payload) {
   });
 }
 export async function saveAuditRecord(id, payload) {
+  // un-marking is a local-only affordance; records are append/overwrite server-side
+  if (!payload.result) return { ok: true, skipped: true };
   await ensureAssets();
-  const asset_id = payload.asset_id ?? cache.assetIdByTag[payload.asset];
+  const raw = payload.asset_id ?? payload.asset;
+  const asset_id = cache.assetIdByTag[raw] ?? (Number.isInteger(raw) ? raw : Number(num(raw)));
   return request('/audits/' + num(id) + '/records', {
     method: 'POST',
-    body: { asset_id, result: String(payload.result || '').toLowerCase(), notes: payload.note ?? payload.notes ?? null },
+    body: { asset_id, result: String(payload.result).toLowerCase(), notes: payload.note ?? payload.notes ?? null },
   });
 }
 export function getAuditDiscrepancies(id) {
@@ -487,6 +510,7 @@ export function closeAudit(id) {
 }
 
 // --- reports ---
+export function getUnreadCount() { return request('/notifications').then((d) => d.unread ?? 0); }
 export function getReportSummary() { return request('/reports/summary'); }
 export function getReportUtilization() { return request('/reports/utilization'); }
 export function getReportHeatmap() { return request('/reports/booking-heatmap'); }
@@ -499,7 +523,7 @@ function qs(params) {
 
 const api = {
   BASE, request, getToken, setToken, clearToken,
-  login, signup, me, logout,
+  login, signup, me, logout, currentUser, getUnreadCount,
   getAssets, getAsset, getCategories, createAsset,
   getAllocations, getTransfers, allocateAsset, returnAsset, requestTransfer, decideTransfer,
   getBookings, createBooking, cancelBooking, rescheduleBooking,

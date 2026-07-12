@@ -44,7 +44,7 @@ export default function Notifications() {
 
   useEffect(() => {
     let alive = true;
-    (async () => {
+    const load = async () => {
       try {
         const [n, a] = await Promise.all([api.getNotifications(), api.getActivity()]);
         if (!alive) return;
@@ -53,8 +53,12 @@ export default function Notifications() {
       } catch (e) {
         if (alive) setError(e.message || 'Could not load your feed.');
       }
-    })();
-    return () => { alive = false; };
+    };
+    load();
+    // keep the feed live: refresh every 30s and when the tab regains focus
+    const iv = setInterval(load, 30_000);
+    window.addEventListener('focus', load);
+    return () => { alive = false; clearInterval(iv); window.removeEventListener('focus', load); };
   }, []);
 
   // live API rows are already scoped to the signed-in user; `for` only exists on demo rows

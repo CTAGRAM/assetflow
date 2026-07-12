@@ -19,24 +19,36 @@ export default function Audits() {
   const canAudit = role === 'Admin' || role === 'Asset Manager';
 
   const [audits, setAudits] = useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [assets, setAssets] = useState([]);
   const [error, setError] = useState('');
-  const [selId, setSelId] = useState('AU-07');
+  const [selId, setSelId] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [fScope, setFScope] = useState('loc:HQ · Floor 2');
   const [fFrom, setFFrom] = useState('2026-07-20');
   const [fTo, setFTo] = useState('2026-08-07');
-  const [fAud1, setFAud1] = useState('daniel');
+  const [fAud1, setFAud1] = useState('');
   const [fAud2, setFAud2] = useState('');
   const toastTimer = useRef(null);
+
+  // detail rows (per-asset items) come from the cycle detail endpoint
+  const loadAudits = async () => {
+    const list = await api.getAudits();
+    return Promise.all(list.map((c) => api.getAudit(c.id).catch(() => c)));
+  };
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const a = await api.getAudits();
+        const [a, e, d, as] = await Promise.all([
+          loadAudits(), api.getEmployees(), api.getDepartments(), api.getAssets(),
+        ]);
         if (!alive) return;
-        setAudits(a.map((c) => ({ ...c, items: c.items.map((i) => ({ ...i })) })));
+        setAudits(a.map((c) => ({ ...c, items: (c.items || []).map((i) => ({ ...i })) })));
+        setEmployees(e); setDepartments(d); setAssets(as);
       } catch (e) {
         if (alive) setError(e.message || 'Could not load audit cycles.');
       }
@@ -69,36 +81,39 @@ export default function Audits() {
   const editable = sel.status !== 'Closed';
   const done = sel.items.filter((i) => i.result).length;
 
-  const audOptions = AF.employees.filter((e) => e.active && e.role !== 'Employee')
-    .concat(AF.employees.filter((e) => e.active && e.role === 'Employee'))
+  const audOptions = employees.filter((e) => e.active && e.role !== 'employee')
+    .concat(employees.filter((e) => e.active && e.role === 'employee'))
     .map((e) => ({ id: e.id, name: e.name }));
-  const scopeOptions = AF.departments.filter((d) => d.active).map((d) => ({ v: 'dept:' + d.id, label: 'Dept — ' + d.name }))
-    .concat(LOCATIONS.map((l) => ({ v: 'loc:' + l, label: 'Location — ' + l })));
+  const liveLocations = [...new Set(assets.map((a) => a.loc).filter((l) => l && l !== '—'))];
+  const scopeOptions = departments.filter((d) => d.active).map((d) => ({ v: 'dept:' + d.dbId, label: 'Dept — ' + d.name }))
+    .concat((liveLocations.length ? liveLocations : LOCATIONS).map((l) => ({ v: 'loc:' + l, label: 'Location — ' + l })));
 
-  const createCycle = () => {
+  const createCycle = async () => {
     const isDept = fScope.indexOf('dept:') === 0;
     const key = fScope.slice(fScope.indexOf(':') + 1);
-    const scopeAssets = AF.assets.filter((a) => isDept ? a.dept === key : a.loc === key).slice(0, 12);
-    if (!scopeAssets.length) { flash('No assets in that scope — pick another.'); return; }
-    const id = 'AU-' + String(8 + audits.filter((a) => a.id.indexOf('AU-') === 0).length).padStart(2, '0');
-    const auditors = [fAud1].concat(fAud2 && fAud2 !== fAud1 ? [fAud2] : []);
-    const cyc = {
-      id, name: 'Q3 2026 — ' + (isDept ? AF.deptName(key) : key), scopeType: isDept ? 'Department' : 'Location',
-      scope: isDept ? AF.deptName(key) : key, dept: isDept ? key : null, from: fFrom, to: fTo, auditors, status: 'In Progress',
-      items: scopeAssets.map((a) => ({ asset: a.tag, result: null, note: '' })),
-    };
-    setAudits((as) => [cyc].concat(as));
-    setSelId(id); setFormOpen(false);
-    api.createAudit({ name: cyc.name, starts_on: fFrom, ends_on: fTo, auditor_ids: auditors, department_id: isDept ? key : null, location: isDept ? null : key });
-    flash(id + ' opened with ' + scopeAssets.length + ' assets in scope. Auditors notified.');
+    if (!fAud1) { flash('Assign at least one auditor.'); return; }
+    const deptName = isDept ? (departments.find((d) => String(d.dbId) === key) || {}).name : null;
+    const auditor_ids = [Number(fAud1)].concat(fAud2 && fAud2 !== fAud1 ? [Number(fAud2)] : []);
+    try {
+      const created = await api.createAudit({
+        name: 'Q3 2026 — ' + (isDept ? deptName : key),
+        starts_on: fFrom, ends_on: fTo, auditor_ids,
+        department_id: isDept ? Number(key) : null, location: isDept ? null : key,
+      });
+      setAudits(await loadAudits().then((a) => a.map((c) => ({ ...c, items: (c.items || []).map((i) => ({ ...i })) }))));
+      setSelId(created.id); setFormOpen(false);
+      flash('Cycle opened. Auditors notified.');
+    } catch (e) { flash(e.message || 'Could not open the cycle.'); }
   };
 
-  const closeCycle = () => {
+  const closeCycle = async () => {
     if (done < sel.items.length) { flash('Check all ' + sel.items.length + ' assets before closing — ' + (sel.items.length - done) + ' still unmarked.'); return; }
-    updateCycle(sel.id, { status: 'Closed', closed: AF.TODAY });
-    api.closeAudit(sel.id);
-    const missing = sel.items.filter((i) => i.result === 'Missing').length;
-    flash(sel.id + ' closed and locked.' + (missing ? ' ' + missing + ' missing asset(s) are now marked Lost.' : ' No discrepancies — clean audit.'));
+    try {
+      const res = await api.closeAudit(sel.id);
+      updateCycle(sel.id, { status: 'Closed', closed: AF.TODAY });
+      const missing = res.summary ? res.summary.marked_lost : 0;
+      flash('Cycle closed and locked.' + (missing ? ' ' + missing + ' missing asset(s) are now marked Lost.' : ' No discrepancies — clean audit.'));
+    } catch (e) { flash(e.message || 'Could not close the cycle.'); }
   };
 
   const disc = sel.items.filter((i) => i.result === 'Missing' || i.result === 'Damaged');
@@ -196,11 +211,13 @@ export default function Audits() {
                   <div style={{ display: 'flex', gap: 4 }}>
                     {['Verified', 'Missing', 'Damaged'].map((m) => {
                       const on = it.result === m, [bg, ink, bd] = MARK_C[m];
-                      const pick = () => {
+                      const pick = async () => {
                         if (!editable) return;
                         const result = on ? null : m;
-                        updateItem(sel.id, it.asset, { result });
-                        api.saveAuditRecord(sel.id, { asset_id: it.asset, result: result ? result.toLowerCase() : null, notes: it.note || '' });
+                        try {
+                          await api.saveAuditRecord(sel.id, { asset: it.asset, result: result ? result.toLowerCase() : null, notes: it.note || '' });
+                          updateItem(sel.id, it.asset, { result });
+                        } catch (e) { flash(e.message || 'Could not save the verdict.'); }
                       };
                       return (
                         <button key={m} onClick={pick} style={{ all: 'unset', boxSizing: 'border-box', cursor: editable ? 'pointer' : 'default', fontSize: 10, fontWeight: 800, padding: '6px 11px', borderRadius: 99, background: on ? bg : '#fff', color: on ? ink : '#A2A3AE', border: '1.5px solid ' + (on ? bd : '#E7E7EE') }}>{m}</button>

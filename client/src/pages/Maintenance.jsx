@@ -74,26 +74,32 @@ export default function Maintenance() {
     ? (!assetOk ? 'Pick the affected asset.' : 'Describe the issue in at least 10 characters so the Asset Manager can triage it.')
     : null;
 
-  const submit = () => {
+  const submit = async () => {
     if (!assetOk || !issueOk) { setTried(true); return; }
-    const id = 'MR-' + Math.floor(93 + Math.random() * 80);
     const issue = fIssue.trim();
-    setReqs((rs) => [{ id, asset: fAsset, by: me.id, date: AF.TODAY, priority: fPri, stage: 'Pending', tech: null, issue, photo: false }].concat(rs));
-    api.createMaintenance({ asset_id: fAsset, description: issue, priority: fPri.toLowerCase() });
-    setFormOpen(false); setFAsset(''); setFIssue(''); setTried(false);
-    flash(id + ' submitted — waiting for Asset Manager approval.');
+    try {
+      await api.createMaintenance({ asset: fAsset, description: issue, priority: fPri.toLowerCase() });
+      setReqs(await api.getMaintenance());
+      setFormOpen(false); setFAsset(''); setFIssue(''); setTried(false);
+      flash('Request submitted — waiting for Asset Manager approval.');
+    } catch (e) { flash(e.message || 'Could not raise the request.'); }
   };
 
-  // pipeline actions (optimistic local update + api write + toast)
-  const approve = (m) => { patch(m.id, { stage: 'Approved' }); api.decideMaintenance(m.id, { approve: true }); flash(m.id + ' approved by ' + me.name + ' — ' + assetLabel(m) + ' is now Under Maintenance.'); };
-  const reject = (m) => { patch(m.id, { stage: 'Rejected', rejectReason: 'Rejected by ' + me.name }); api.decideMaintenance(m.id, { approve: false }); flash(m.id + ' rejected. The requester has been notified.'); };
+  // pipeline actions: the API write is the source of truth, the local patch
+  // mirrors it only after it succeeds
+  const act = async (m, write, apply, msg) => {
+    try { await write(); patch(m.id, apply); flash(msg); }
+    catch (e) { flash(e.message || 'That action failed.'); }
+  };
+  const approve = (m) => act(m, () => api.decideMaintenance(m.id, { approve: true }), { stage: 'Approved' }, 'Approved by ' + me.name + ' — ' + assetLabel(m) + ' is now Under Maintenance.');
+  const reject = (m) => act(m, () => api.decideMaintenance(m.id, { approve: false }), { stage: 'Rejected', rejectReason: 'Rejected by ' + me.name }, 'Rejected. The requester has been notified.');
   const assign = (m) => {
     const t = techPicks[m.id];
     if (!t) { flash('Pick a technician first.'); return; }
-    patch(m.id, { tech: t, stage: 'Technician Assigned' }); api.assignMaintenance(m.id, { technician: t }); flash(t + ' assigned to ' + m.id + '.');
+    act(m, () => api.assignMaintenance(m.id, { technician: t }), { tech: t, stage: 'Technician Assigned' }, t + ' assigned.');
   };
-  const start = (m) => { patch(m.id, { stage: 'In Progress' }); api.startMaintenance(m.id); flash(m.id + ' is now in progress.'); };
-  const resolve = (m) => { patch(m.id, { stage: 'Resolved', resolved: AF.TODAY }); api.resolveMaintenance(m.id); flash(m.id + ' resolved — ' + assetLabel(m) + ' flipped back to Available.'); };
+  const start = (m) => act(m, () => api.startMaintenance(m.id), { stage: 'In Progress' }, 'Now in progress.');
+  const resolve = (m) => act(m, () => api.resolveMaintenance(m.id), { stage: 'Resolved', resolved: AF.TODAY }, 'Resolved — ' + assetLabel(m) + ' flipped back to Available.');
 
   const rejected = reqs.filter((m) => m.stage === 'Rejected');
 

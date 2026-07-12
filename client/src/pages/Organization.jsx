@@ -113,24 +113,26 @@ function OrgBody(p) {
   const ordered = [];
   depts.filter((d) => !d.parent).forEach((par) => { ordered.push(par); depts.filter((c) => c.parent === par.id).forEach((c) => ordered.push(c)); });
 
-  const addDept = () => {
+  const addDept = async () => {
     const v = ndName.trim();
     if (!v) { flash('Give the department a name first.'); return; }
-    const id = v.toLowerCase().replace(/\W+/g, '').slice(0, 8);
-    setDepts((ds) => ds.concat([{ id, name: v, head: ndHead || null, parent: ndParent || null, active: true }]));
-    api.createDepartment({ name: v, head_id: ndHead || null, parent_id: ndParent || null });
-    setNdName(''); setNdHead(''); setNdParent('');
-    flash(v + ' created.');
+    try {
+      await api.createDepartment({ name: v, head_id: ndHead || null, parent_id: ndParent || null });
+      setDepts(await api.getDepartments());
+      setNdName(''); setNdHead(''); setNdParent('');
+      flash(v + ' created.');
+    } catch (e) { flash(e.message || 'Could not create the department.'); }
   };
 
-  const addCat = () => {
+  const addCat = async () => {
     const v = ncName.trim();
     if (!v) { flash('Name the category first.'); return; }
-    const id = v.toLowerCase().replace(/\W+/g, '').slice(0, 8);
-    setCats((cs) => cs.concat([{ id, name: v, img: null, fields: [] }]));
-    api.createCategory({ name: v, extra_fields: [] });
-    setNcName('');
-    flash('Category “' + v + '” created — add its custom fields below.');
+    try {
+      await api.createCategory({ name: v, extra_fields: [] });
+      setCats(await api.getCategories());
+      setNcName('');
+      flash('Category “' + v + '” created — add its custom fields below.');
+    } catch (e) { flash(e.message || 'Could not create the category.'); }
   };
 
   return (
@@ -211,18 +213,22 @@ function DepartmentsTab(p) {
           const people = emps.filter((e) => e.dept === d.id && e.active).length;
           const parentName = d.parent ? (depts.find((x) => x.id === d.parent) || {}).name : '—';
           const openEdit = () => editing ? setEditingId(null) : (setEditingId(d.id), setEName(d.name), setEHead(d.head || ''), setEParent(d.parent || ''));
-          const toggle = () => {
+          const toggle = async () => {
             const active = !d.active;
-            patchDept(d.id, { active });
-            api.updateDepartment(d.id, { is_active: active });
-            flash(d.name + (active ? ' reactivated.' : ' deactivated — its assets stay registered.'));
+            try {
+              await api.updateDepartment(d.id, { is_active: active });
+              patchDept(d.id, { active });
+              flash(d.name + (active ? ' reactivated.' : ' deactivated — its assets stay registered.'));
+            } catch (e) { flash(e.message || 'Could not update the department.'); }
           };
-          const save = () => {
+          const save = async () => {
             const name = eName || d.name;
-            patchDept(d.id, { name, head: eHead || null, parent: eParent || null });
-            api.updateDepartment(d.id, { name, head_id: eHead || null, parent_id: eParent || null });
-            setEditingId(null);
-            flash(name + ' updated.');
+            try {
+              await api.updateDepartment(d.id, { name, head_id: eHead || null, parent_id: eParent || null });
+              patchDept(d.id, { name, head: eHead || null, parent: eParent || null });
+              setEditingId(null);
+              flash(name + ' updated.');
+            } catch (e) { flash(e.message || 'Could not update the department.'); }
           };
           return (
             <div key={d.id} style={{ borderBottom: '1px solid #F6F6F9' }}>
@@ -278,15 +284,17 @@ function CategoriesTab(p) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
       {cats.map((c) => {
         const count = assets.filter((a) => a.cat === c.id).length;
-        const addField = () => {
+        const addField = async () => {
           const v = (newFields[c.id] || '').trim();
           if (!v) return;
           const field = { key: v.toLowerCase().replace(/\W+/g, ''), label: v, type: /month|year|km|count|capacity|number/i.test(v) ? 'number' : 'text' };
           const nextFields = c.fields.concat([field]);
-          setCats((cs) => cs.map((x) => x.id === c.id ? { ...x, fields: nextFields } : x));
-          api.updateCategory(c.id, { extra_fields: nextFields.map((f) => ({ name: f.key, label: f.label, type: f.type })) });
-          setNewFields((nf) => ({ ...nf, [c.id]: '' }));
-          flash('Field “' + v + '” added to ' + c.name + '.');
+          try {
+            await api.updateCategory(c.id, { extra_fields: nextFields.map((f) => ({ name: f.key, label: f.label, type: f.type })) });
+            setCats((cs) => cs.map((x) => x.id === c.id ? { ...x, fields: nextFields } : x));
+            setNewFields((nf) => ({ ...nf, [c.id]: '' }));
+            flash('Field “' + v + '” added to ' + c.name + '.');
+          } catch (e) { flash(e.message || 'Could not save the field.'); }
         };
         return (
           <div key={c.id} style={{ background: '#fff', borderRadius: 20, padding: '16px 18px' }}>
@@ -358,17 +366,21 @@ function DirectoryTab(p) {
             <span>Employee</span><span>Email</span><span>Department</span><span>Role</span><span>Status</span>
           </div>
           {rows.map((e) => {
-            const setRoleVal = (ev) => {
+            const setRoleVal = async (ev) => {
               const old = e.role, next = ev.target.value;
-              patchEmp(e.id, { role: next });
-              api.updateEmployee(e.id, { role: next });
-              flash(e.name + ': ' + old + ' → ' + next + '.');
+              try {
+                await api.updateEmployee(e.id, { role: next });
+                patchEmp(e.id, { role: next });
+                flash(e.name + ': ' + old + ' → ' + next + '.');
+              } catch (err) { flash(err.message || 'Could not change the role.'); }
             };
-            const toggle = () => {
+            const toggle = async () => {
               const active = !e.active;
-              patchEmp(e.id, { active });
-              api.updateEmployee(e.id, { is_active: active });
-              flash(e.name + (active ? ' reactivated.' : ' marked inactive.'));
+              try {
+                await api.updateEmployee(e.id, { is_active: active });
+                patchEmp(e.id, { active });
+                flash(e.name + (active ? ' reactivated.' : ' marked inactive.'));
+              } catch (err) { flash(err.message || 'Could not update the employee.'); }
             };
             return (
               <div key={e.id} style={{ display: 'grid', gridTemplateColumns: grid, gap: 10, alignItems: 'center', padding: '9px 18px', borderBottom: '1px solid #F6F6F9', opacity: e.active ? 1 : 0.55 }}>

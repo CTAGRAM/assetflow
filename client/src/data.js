@@ -249,11 +249,24 @@ export const activity = [
   ['2026-01-30 17:00', 'maya', 'Audit', 'Closed AU-05; AF-0010 confirmed Lost'],
 ];
 
-// ---------- personas / role switching ----------
+// ---------- identity ----------
+// The signed-in user (stored by api.js on login) is the single source of
+// truth. The persona table below is only a last-resort fallback so components
+// never crash when rendered outside a session.
 export const personas = { 'Admin': 'maya', 'Asset Manager': 'daniel', 'Department Head': 'priya', 'Employee': 'tom' };
-export function role() { try { return localStorage.getItem('af_role') || 'Admin'; } catch (e) { return 'Admin'; } }
+const ROLE_LABEL = { admin: 'Admin', asset_manager: 'Asset Manager', department_head: 'Department Head', employee: 'Employee' };
+function liveUser() { try { return JSON.parse(localStorage.getItem('af_user')); } catch (e) { return null; } }
+export function role() {
+  const u = liveUser();
+  if (u) return ROLE_LABEL[u.role] || 'Employee';
+  try { return localStorage.getItem('af_role') || 'Admin'; } catch (e) { return 'Admin'; }
+}
 export function setRole(r) { try { localStorage.setItem('af_role', r); } catch (e) {} }
-export function me() { return employees.find(e => e.id === personas[role()]); }
+export function me() {
+  const u = liveUser();
+  if (u) return { id: u.id, name: u.name, email: u.email, role: role(), dept: u.department_id ?? null };
+  return employees.find(e => e.id === personas[role()]);
+}
 
 // ---------- helpers ----------
 const byId = {}; employees.forEach(e => byId[e.id] = e);
