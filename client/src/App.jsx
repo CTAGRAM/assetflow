@@ -7,7 +7,6 @@ import Explore from './pages/Explore.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Assets from './pages/Assets.jsx';
-import AssetDetail from './pages/AssetDetail.jsx';
 import Allocation from './pages/Allocation.jsx';
 import Booking from './pages/Booking.jsx';
 
@@ -23,8 +22,10 @@ export default function App() {
       {/* App shell: topbar + routed page */}
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        {/* The registry shows asset detail inline (as in the prototype); the
+            :tag form deep-links to a pre-selected asset. */}
         <Route path="/assets" element={<Assets />} />
-        <Route path="/assets/:tag" element={<AssetDetail />} />
+        <Route path="/assets/:tag" element={<Assets />} />
         <Route path="/allocation" element={<Allocation />} />
         <Route path="/booking" element={<Booking />} />
 
