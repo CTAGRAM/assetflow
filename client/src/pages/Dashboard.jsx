@@ -52,7 +52,14 @@ export default function Dashboard() {
 
   const model = useMemo(() => {
     if (!assets) return null;
-    const alloc = assets.filter((a) => a.status === 'Allocated' && a.expReturn);
+    // Live /assets carries no expected-return date (it lives on the open
+    // allocation), so enrich each asset with the return date from its open
+    // allocation. In demo-fallback mode the asset already has expReturn, so we
+    // keep whichever is present.
+    const expByTag = {};
+    allocations.forEach((al) => { if (al.status === 'Active' && al.expReturn) expByTag[al.asset] = al.expReturn; });
+    const assetsX = assets.map((a) => (a.expReturn || !expByTag[a.tag] ? a : { ...a, expReturn: expByTag[a.tag] }));
+    const alloc = assetsX.filter((a) => a.status === 'Allocated' && a.expReturn);
     const overdueA = alloc.filter((a) => AF.daysFromToday(a.expReturn) < 0);
     const upcomingA = alloc.filter((a) => AF.daysFromToday(a.expReturn) >= 0);
     const dueMonth = upcomingA.filter((a) => AF.daysFromToday(a.expReturn) <= 31);
@@ -92,8 +99,9 @@ export default function Dashboard() {
       };
     });
 
-    // detail panel for the selected asset
-    const selAsset = AF.asset(selTag);
+    // detail panel for the selected asset (prefer the loaded/enriched asset so
+    // it works against live data; fall back to the static lookup)
+    const selAsset = assetsX.find((a) => a.tag === selTag) || AF.asset(selTag);
     let d = null;
     if (selAsset) {
       const dd = AF.daysFromToday(selAsset.expReturn), od = dd < 0;

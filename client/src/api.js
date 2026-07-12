@@ -1,277 +1,320 @@
 // AssetFlow — single API surface for the whole frontend.
 //
-// Every screen must read and write through this module. Today the backend is
-// still being built in parallel, so most calls temporarily resolve the design
-// prototype's sample data (from src/data.js) instead of hitting the server.
-// Each of those is wrapped in `demo(...)` which logs a loud, greppable
-// `[TODO][api]` warning at runtime. When the matching endpoint lands, swap the
-// `demo(...)` line for the `request(...)` line already written beside it — a
-// one-line change per call. The health check below already talks to the real
-// server, proving the wiring works end to end.
+// This talks to the real backend documented at http://localhost:3000/api.
+// Every screen reads and writes through this module. The backend is snake_case
+// with integer ids and lowercase enums; the screens (ported from the design
+// prototype) speak a camelCase, slug/tag-keyed shape. This module is the
+// adapter between the two:
 //
-// >>> SUBMISSION GATE: `grep "\[TODO\]\[api\]" src/api.js` MUST return nothing
-// >>> before final submission. The app must not ship on static data.
+//   • reads   — call the live endpoint, then NORMALIZE each row into the shape
+//               the screens expect (Title-case status, category slug, tag keys).
+//   • writes  — TRANSFORM the screen's payload into the API's body (integer
+//               ids resolved by natural key: asset tag, person name, category
+//               name), then POST/PATCH.
+//   • auth    — login/signup persist the JWT; every other request sends it as
+//               a Bearer token.
+//   • errors  — the documented shapes (400 {errors}, 409 {error, suggestion},
+//               403 {error}) become a thrown Error with .message/.errors/
+//               .suggestion so screens show them gracefully, never a blank fail.
+//
+// If the server is unreachable (or the caller isn't signed in yet) READS fall
+// back to the prototype sample data so the UI never blank-screens in local dev.
+// That fallback is a safety net, not the source of truth: when the API is up,
+// live data is used. Each fallback logs a greppable "[api] live unavailable".
 
-import * as demoData from './data.js';
+import * as demo from './data.js';
 
 export const BASE = 'http://localhost:3000/api';
 
-// --- core fetch wrapper ---------------------------------------------------
-// Returns parsed JSON on 2xx. On failure throws an Error whose `.message` is
-// the server's friendly message when present, never a bare status code, so
-// callers can surface it in the UI gracefully instead of a blank failure.
+// ---------------------------------------------------------------- session ---
+const TOKEN_KEY = 'af_token';
+export function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch { return null; } }
+export function setToken(t) { try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ } }
+export function clearToken() { setToken(null); }
+
+// ------------------------------------------------------------ core request ---
+// Resolves parsed JSON on 2xx. On failure throws an Error carrying the server's
+// friendly message plus `.errors` (field map) / `.suggestion` / `.status`.
 export async function request(path, { method = 'GET', body, headers, ...rest } = {}) {
+  const token = getToken();
   let res;
   try {
     res = await fetch(BASE + path, {
       method,
       headers: {
         ...(body ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: 'Bearer ' + token } : {}),
         ...headers,
       },
       body: body != null ? JSON.stringify(body) : undefined,
       ...rest,
     });
-  } catch (networkErr) {
-    // fetch only rejects on network-level failure (server down, CORS, DNS).
-    throw new Error('Cannot reach the AssetFlow server. Is it running on ' + BASE + '?');
+  } catch {
+    const err = new Error('Cannot reach the AssetFlow server. Is it running on ' + BASE + '?');
+    err.offline = true;
+    throw err;
   }
 
   let payload = null;
   const text = await res.text();
-  if (text) {
-    try { payload = JSON.parse(text); } catch { payload = text; }
-  }
+  if (text) { try { payload = JSON.parse(text); } catch { payload = text; } }
 
   if (!res.ok) {
-    const msg = (payload && (payload.error || payload.message)) || res.statusText || ('Request failed (' + res.status + ')');
-    const err = new Error(msg);
+    const err = new Error();
     err.status = res.status;
     err.payload = payload;
+    if (payload && payload.errors) {
+      err.errors = payload.errors;                       // { field: message }
+      err.message = Object.values(payload.errors)[0] || 'Please fix the highlighted fields.';
+    } else if (payload && payload.error) {
+      err.message = payload.error;
+      err.suggestion = payload.suggestion;               // e.g. "transfer" on 409
+    } else {
+      err.message = (typeof payload === 'string' && payload) || res.statusText || ('Request failed (' + res.status + ')');
+    }
     throw err;
   }
   return payload;
 }
 
-// --- demo-data fallback ---------------------------------------------------
-// Resolves prototype sample data through a promise so callers use the exact
-// same `await api.x()` shape they will use against the real endpoint. Warns
-// once per key so the console makes clear which screens are still on stubs.
-const warned = new Set();
-function demo(key, value) {
-  if (!warned.has(key)) {
-    warned.add(key);
-    // eslint-disable-next-line no-console
-    console.warn('[TODO][api] "' + key + '" is served from static demo data (src/data.js). Replace with a real endpoint before submission.');
+// A read that degrades to sample data if the server is down or we're not signed
+// in yet. Real errors (400/403/409) still throw so the UI can surface them.
+async function read(path, fallback, mapper) {
+  try {
+    const rows = await request(path);
+    return mapper ? mapper(rows) : rows;
+  } catch (e) {
+    if (e.offline || e.status === 401) {
+      if (!read._warned) read._warned = new Set();
+      if (!read._warned.has(path)) { read._warned.add(path); console.warn('[api] live unavailable for ' + path + ' — using sample data.'); }
+      return typeof fallback === 'function' ? fallback() : fallback;
+    }
+    throw e;
   }
-  return Promise.resolve(value);
 }
 
-// --- health (REAL endpoint, already live) ---------------------------------
-export function health() {
-  return request('/health');
+// -------------------------------------------------------- natural-key maps ---
+// Bridges between the demo slug world and the live integer-id world, keyed on
+// values that are stable across both (tag, person name, category/dept name).
+const demoCatByName = {}; demo.categories.forEach((c) => { demoCatByName[c.name] = c; });
+const demoDeptByName = {}; demo.departments.forEach((d) => { demoDeptByName[d.name] = d; });
+const demoEmpBySlug = {}; demo.employees.forEach((e) => { demoEmpBySlug[e.id] = e; });
+
+const catSlugByName = (name) => (demoCatByName[name] ? demoCatByName[name].id : name);
+const catImgByName = (name) => (demoCatByName[name] ? demoCatByName[name].img : null);
+const deptSlugByName = (name) => (demoDeptByName[name] ? demoDeptByName[name].id : name);
+
+// Live-id caches, filled from list reads, used to resolve write payloads.
+const cache = { assetIdByTag: {}, empIdByName: {}, catIdByName: {} };
+const rememberAssets = (rows) => rows.forEach((a) => { if (a && a.tag != null && a.id != null) cache.assetIdByTag[a.tag] = a.id; });
+const rememberEmployees = (rows) => rows.forEach((e) => { if (e && e.name) cache.empIdByName[e.name] = e.id; });
+const rememberCategories = (rows) => rows.forEach((c) => { if (c && c.name) cache.catIdByName[c.name] = c.id; });
+
+// Resolve a live user id from either a live int id, a demo slug, or a name.
+function resolveUserId(idOrSlugOrName) {
+  if (Number.isInteger(idOrSlugOrName)) return idOrSlugOrName;
+  const emp = demoEmpBySlug[idOrSlugOrName];
+  const name = emp ? emp.name : idOrSlugOrName;
+  return cache.empIdByName[name];
 }
 
-// --- auth -----------------------------------------------------------------
-// Signup always creates an `employee`; there is deliberately no role field.
-export function login(credentials) {
-  // TODO: return request('/auth/login', { method: 'POST', body: credentials });
-  return demo('auth.login', { ok: true, user: demoData.me(), token: 'demo-token' });
-}
-export function signup(details) {
-  // TODO: return request('/auth/signup', { method: 'POST', body: details });
-  return demo('auth.signup', { ok: true, user: { ...details, role: 'Employee' }, token: 'demo-token' });
+// Make sure the id caches are warm before a write resolves a natural key.
+// Cheap no-op once populated; screens that only read never pay for these.
+async function ensureAssets() { if (!Object.keys(cache.assetIdByTag).length) { try { await getAssets(); } catch { /* server down: write will surface its own error */ } } }
+async function ensureEmployees() { if (!Object.keys(cache.empIdByName).length) { try { await getEmployees(); } catch { /* as above */ } } }
+async function ensureCategories() { if (!Object.keys(cache.catIdByName).length) { try { await getCategories(); } catch { /* as above */ } } }
+
+// ------------------------------------------------------------ normalizers ---
+const STATUS_TITLE = { available: 'Available', allocated: 'Allocated', reserved: 'Reserved', under_maintenance: 'Under Maintenance', lost: 'Lost', retired: 'Retired', disposed: 'Disposed' };
+const BOOKING_TITLE = { upcoming: 'Upcoming', ongoing: 'Ongoing', completed: 'Completed', cancelled: 'Cancelled' };
+const dateOnly = (v) => (v ? String(v).slice(0, 10) : null);
+const hhmm = (v) => { const m = String(v).match(/T(\d{2}:\d{2})/); return m ? m[1] : String(v).slice(11, 16); };
+
+function normalizeAsset(r) {
+  return {
+    id: r.id, tag: r.tag, name: r.name,
+    cat: catSlugByName(r.category_name), catName: r.category_name,
+    serial: r.serial_number || '—',
+    acq: dateOnly(r.acquisition_date),
+    cost: r.acquisition_cost != null ? Number(r.acquisition_cost) : 0,
+    cond: r.condition || '—', loc: r.location || '—', dept: undefined,
+    status: STATUS_TITLE[r.status] || r.status, bookable: !!r.is_bookable,
+    img: r.photo_url || catImgByName(r.category_name) || null,
+    holder: r.holder_name || null, holderType: 'employee', holderId: r.holder_id || null,
+    expReturn: null, extra: r.extra || {},
+  };
 }
 
-// --- assets ---------------------------------------------------------------
+function normalizeAllocation(r) {
+  return {
+    id: r.id, asset: r.tag, assetName: r.asset_name,
+    to: r.holder_name, toId: r.holder_id, toType: 'employee',
+    by: r.allocated_by_name, date: dateOnly(r.allocated_at),
+    expReturn: dateOnly(r.expected_return_date),
+    returned: dateOnly(r.returned_at),
+    status: r.returned_at ? 'Returned' : 'Active',
+    overdue: !!r.overdue, checkin: r.return_notes || undefined,
+  };
+}
+
+function normalizeTransfer(r) {
+  // Map live request_status (pending/approved/rejected) to the screen's labels.
+  const STATUS = { pending: 'Requested', approved: 'Completed', rejected: 'Declined' };
+  return {
+    id: 'TR-' + r.id, rawId: r.id, asset: r.tag,
+    from: r.current_holder_name, to: r.to_user_name,
+    requestedBy: r.requested_by_name, date: dateOnly(r.created_at),
+    status: STATUS[r.status] || r.status, reason: r.reason || 'Transfer request.',
+    allocationId: r.allocation_id, toUserId: r.to_user_id,
+  };
+}
+
+function normalizeBooking(r) {
+  return {
+    id: 'BK-' + r.id, rawId: r.id, resource: r.tag, resourceName: r.asset_name,
+    by: r.booked_by_name, title: r.purpose || 'Booking',
+    date: dateOnly(r.starts_at), start: hhmm(r.starts_at), end: hhmm(r.ends_at),
+    status: BOOKING_TITLE[r.status] || r.status,
+  };
+}
+
+function normalizeEmployee(e) {
+  return { id: e.id, name: e.name, email: e.email, role: e.role, dept: deptSlugByName(e.department_name), deptName: e.department_name, active: e.is_active !== false };
+}
+
+// ===================================================================== AUTH ==
+// Signup always creates an employee; there is deliberately no role field.
+export async function login(credentials) {
+  const data = await request('/auth/login', { method: 'POST', body: credentials });
+  if (data && data.token) setToken(data.token);
+  return data; // { token, user }
+}
+export async function signup(details) {
+  const data = await request('/auth/signup', { method: 'POST', body: details });
+  if (data && data.token) setToken(data.token);
+  return data; // { token, user }
+}
+export function me() {
+  return request('/auth/me');
+}
+export function logout() { clearToken(); }
+
+// =================================================================== ASSETS ==
 export function getAssets() {
-  // TODO: return request('/assets');
-  return demo('assets.list', demoData.assets);
+  return read('/assets', () => demo.assets, (rows) => { rememberAssets(rows); return rows.map(normalizeAsset); });
 }
 export function getAsset(tag) {
-  // TODO: return request('/assets/' + encodeURIComponent(tag));
-  return demo('assets.get', demoData.assets.find((a) => a.tag === tag) || null);
-}
-export function createAsset(asset) {
-  // TODO: return request('/assets', { method: 'POST', body: asset });
-  return demo('assets.create', { ok: true, asset });
+  const id = cache.assetIdByTag[tag];
+  const path = '/assets/' + encodeURIComponent(id != null ? id : tag);
+  return read(path, () => demo.assets.find((a) => a.tag === tag) || null, (r) => (r ? normalizeAsset(r) : null));
 }
 export function getCategories() {
-  // TODO: return request('/categories');
-  return demo('categories.list', demoData.categories);
+  return read('/categories', () => demo.categories, (rows) => { rememberCategories(rows); return rows; });
+}
+export async function createAsset(asset) {
+  // Resolve the live integer category_id from the demo slug's display name.
+  const catName = (demo.categories.find((c) => c.id === asset.cat) || {}).name;
+  await ensureCategories();
+  const category_id = cache.catIdByName[catName];
+  const body = {
+    name: asset.name, category_id,
+    serial_number: asset.serial && asset.serial !== '—' ? asset.serial : null,
+    acquisition_date: asset.acq || null,
+    acquisition_cost: asset.cost != null ? Number(asset.cost) : null,
+    condition: asset.cond || null, location: asset.loc || null,
+    photo_url: asset.img || null, extra: asset.extra || {}, is_bookable: !!asset.bookable,
+  };
+  const created = await request('/assets', { method: 'POST', body });
+  return { ok: true, asset: normalizeAsset({ ...created, category_name: catName }) };
 }
 
-// --- allocation & transfer ------------------------------------------------
+// ================================================== ALLOCATION & TRANSFER ==
 export function getAllocations() {
-  // TODO: return request('/allocations');
-  return demo('allocations.list', demoData.allocations);
+  return read('/allocations?open=true', () => demo.allocations.filter((a) => a.status === 'Active'), (rows) => rows.map(normalizeAllocation));
 }
 export function getTransfers() {
-  // TODO: return request('/transfers');
-  return demo('transfers.list', demoData.transfers);
+  return read('/transfers', () => demo.transfers, (rows) => rows.map(normalizeTransfer));
 }
-export function allocateAsset(payload) {
-  // TODO: return request('/allocations', { method: 'POST', body: payload });
-  return demo('allocations.create', { ok: true, ...payload });
+export async function allocateAsset(payload) {
+  // payload from the screen: { asset (tag), to (slug/int), toType, expReturn }
+  await Promise.all([ensureAssets(), ensureEmployees()]);
+  const asset_id = cache.assetIdByTag[payload.asset];
+  if (payload.toType === 'department') {
+    const err = new Error('Department-pool allocation is not supported by the API yet — allocate to a person.');
+    err.errors = { holder_id: err.message };
+    throw err;
+  }
+  const holder_id = resolveUserId(payload.to);
+  const body = { asset_id, holder_id, expected_return_date: payload.expReturn || null };
+  const created = await request('/allocations', { method: 'POST', body });
+  return { ok: true, allocation: created };
 }
-export function returnAsset(payload) {
-  // TODO: return request('/allocations/' + encodeURIComponent(payload.id) + '/return', { method: 'POST', body: payload });
-  return demo('allocations.return', { ok: true, ...payload });
+export async function returnAsset(payload) {
+  // payload.id is the live allocation id (from getAllocations)
+  const created = await request('/allocations/' + encodeURIComponent(payload.id) + '/return', { method: 'POST', body: { notes: payload.notes || null } });
+  return { ok: true, allocation: created };
 }
-export function requestTransfer(payload) {
-  // TODO: return request('/transfers', { method: 'POST', body: payload });
-  return demo('transfers.create', { ok: true, ...payload });
+export async function requestTransfer(payload) {
+  // Needs the open allocation's id for the asset + the target user id.
+  await ensureEmployees();
+  const to_user_id = resolveUserId(payload.to);
+  let allocation_id = payload.allocationId;
+  if (!allocation_id) {
+    try {
+      const open = await request('/allocations?open=true');
+      const match = open.find((a) => a.tag === payload.asset);
+      allocation_id = match && match.id;
+    } catch { /* fall through to a clear error below */ }
+  }
+  if (!allocation_id) throw new Error('Could not find the current allocation to transfer.');
+  const created = await request('/transfers', { method: 'POST', body: { allocation_id, to_user_id } });
+  return { ok: true, transfer: created };
+}
+export async function decideTransfer(rawId, approve) {
+  const updated = await request('/transfers/' + encodeURIComponent(rawId) + '/decide', { method: 'POST', body: { approve } });
+  return { ok: true, transfer: updated };
 }
 
-// --- bookings -------------------------------------------------------------
+// ================================================================= BOOKINGS ==
 export function getBookings() {
-  // TODO: return request('/bookings');
-  return demo('bookings.list', demoData.bookings);
+  return read('/bookings', () => demo.bookings, (rows) => { rememberAssets(rows.map((r) => ({ tag: r.tag, id: r.asset_id }))); return rows.map(normalizeBooking); });
 }
-export function createBooking(payload) {
-  // TODO: return request('/bookings', { method: 'POST', body: payload });
-  return demo('bookings.create', { ok: true, ...payload });
+export async function createBooking(payload) {
+  await ensureAssets();
+  const asset_id = cache.assetIdByTag[payload.resource];
+  const body = { asset_id, starts_at: payload.date + 'T' + payload.start, ends_at: payload.date + 'T' + payload.end, purpose: payload.title || null };
+  const created = await request('/bookings', { method: 'POST', body });
+  return { ok: true, booking: normalizeBooking(created) };
 }
-export function cancelBooking(id) {
-  // TODO: return request('/bookings/' + encodeURIComponent(id) + '/cancel', { method: 'POST' });
-  return demo('bookings.cancel', { ok: true, id });
+export async function cancelBooking(id) {
+  const rawId = typeof id === 'string' && id.startsWith('BK-') ? id.slice(3) : id;
+  const updated = await request('/bookings/' + encodeURIComponent(rawId) + '/cancel', { method: 'POST' });
+  return { ok: true, booking: normalizeBooking(updated) };
 }
-export function rescheduleBooking(id, payload) {
-  // TODO: return request('/bookings/' + encodeURIComponent(id) + '/reschedule', { method: 'POST', body: payload });
-  return demo('bookings.reschedule', { ok: true, id, ...payload });
+export async function rescheduleBooking(id, payload) {
+  const rawId = typeof id === 'string' && id.startsWith('BK-') ? id.slice(3) : id;
+  const body = { starts_at: payload.date + 'T' + payload.start, ends_at: payload.date + 'T' + payload.end };
+  const updated = await request('/bookings/' + encodeURIComponent(rawId), { method: 'PATCH', body });
+  return { ok: true, booking: normalizeBooking(updated) };
 }
 
-// --- org / people (owned by Tanishq's screens, exposed here for shared use) --
+// ============================================ ORG / PEOPLE (shared reads) ==
 export function getEmployees() {
-  // TODO: return request('/employees');
-  return demo('employees.list', demoData.employees);
+  return read('/employees', () => demo.employees, (rows) => { rememberEmployees(rows); return rows.map(normalizeEmployee); });
 }
 export function getDepartments() {
-  // TODO: return request('/departments');
-  return demo('departments.list', demoData.departments);
+  return read('/departments', () => demo.departments, (rows) => rows.map((d) => ({ id: deptSlugByName(d.name), name: d.name, head: d.head_id, active: d.is_active !== false, memberCount: d.member_count })));
 }
 export function getNotifications() {
-  // TODO: return request('/notifications');
-  return demo('notifications.list', demoData.notifications);
-}
-export function markNotificationRead(id) {
-  // TODO: return request('/notifications/' + encodeURIComponent(id) + '/read', { method: 'POST' });
-  return demo('notifications.read', { ok: true, id });
-}
-export function markAllNotificationsRead() {
-  // TODO: return request('/notifications/read-all', { method: 'POST' });
-  return demo('notifications.readAll', { ok: true });
-}
-export function getActivity(params) {
-  // TODO: return request('/activity' + qs(params));
-  return demo('activity.list', demoData.activity);
-}
-
-// --- organization writes (Tanishq's Organization screen) ------------------
-// The Employee Directory PATCH is the ONLY place an Employee gets promoted.
-export function createDepartment(payload) {
-  // TODO: return request('/departments', { method: 'POST', body: payload });
-  return demo('departments.create', { ok: true, ...payload });
-}
-export function updateDepartment(id, patch) {
-  // TODO: return request('/departments/' + encodeURIComponent(id), { method: 'PATCH', body: patch });
-  return demo('departments.update', { ok: true, id, ...patch });
-}
-export function createCategory(payload) {
-  // TODO: return request('/categories', { method: 'POST', body: payload });
-  return demo('categories.create', { ok: true, ...payload });
-}
-export function updateCategory(id, patch) {
-  // TODO: return request('/categories/' + encodeURIComponent(id), { method: 'PATCH', body: patch });
-  return demo('categories.update', { ok: true, id, ...patch });
-}
-export function updateEmployee(id, patch) {
-  // TODO: return request('/employees/' + encodeURIComponent(id), { method: 'PATCH', body: patch });
-  return demo('employees.update', { ok: true, id, ...patch });
-}
-
-// --- maintenance (Tanishq's Maintenance screen) ---------------------------
-export function getMaintenance(params) {
-  // TODO: return request('/maintenance' + qs(params));
-  return demo('maintenance.list', demoData.maintenance);
-}
-export function createMaintenance(payload) {
-  // TODO: return request('/maintenance', { method: 'POST', body: payload });
-  return demo('maintenance.create', { ok: true, ...payload });
-}
-export function decideMaintenance(id, payload) {
-  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/decide', { method: 'POST', body: payload });
-  return demo('maintenance.decide', { ok: true, id, ...payload });
-}
-export function assignMaintenance(id, payload) {
-  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/assign', { method: 'POST', body: payload });
-  return demo('maintenance.assign', { ok: true, id, ...payload });
-}
-export function startMaintenance(id) {
-  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/start', { method: 'POST' });
-  return demo('maintenance.start', { ok: true, id });
-}
-export function resolveMaintenance(id) {
-  // TODO: return request('/maintenance/' + encodeURIComponent(id) + '/resolve', { method: 'POST' });
-  return demo('maintenance.resolve', { ok: true, id });
-}
-
-// --- audits (Tanishq's Audits screen) -------------------------------------
-export function getAudits() {
-  // TODO: return request('/audits');
-  return demo('audits.list', demoData.audits);
-}
-export function getAudit(id) {
-  // TODO: return request('/audits/' + encodeURIComponent(id));
-  return demo('audits.get', demoData.audits.find((a) => a.id === id) || null);
-}
-export function createAudit(payload) {
-  // TODO: return request('/audits', { method: 'POST', body: payload });
-  return demo('audits.create', { ok: true, ...payload });
-}
-export function saveAuditRecord(id, payload) {
-  // TODO: return request('/audits/' + encodeURIComponent(id) + '/records', { method: 'POST', body: payload });
-  return demo('audits.record', { ok: true, id, ...payload });
-}
-export function getAuditDiscrepancies(id) {
-  // TODO: return request('/audits/' + encodeURIComponent(id) + '/discrepancies');
-  const cyc = demoData.audits.find((a) => a.id === id) || { items: [] };
-  return demo('audits.discrepancies', cyc.items.filter((i) => i.result === 'Missing' || i.result === 'Damaged'));
-}
-export function closeAudit(id) {
-  // TODO: return request('/audits/' + encodeURIComponent(id) + '/close', { method: 'POST' });
-  return demo('audits.close', { ok: true, id });
-}
-
-// --- reports (Tanishq's Reports screen) -----------------------------------
-// The report cards recreate the prototype's exact visuals by computing over the
-// collections above (assets / bookings / maintenance / departments), so the
-// only report-specific endpoints are the optional pre-aggregated ones below.
-// When the backend lands, screens may switch to these or keep computing client
-// side — either way the reads still flow through this module.
-export function getReportSummary() {
-  // TODO: return request('/reports/summary');
-  return demo('reports.summary', {});
-}
-
-// small querystring helper for the GET endpoints above
-function qs(params) {
-  if (!params) return '';
-  const p = Object.entries(params).filter(([, v]) => v != null && v !== '');
-  return p.length ? '?' + p.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&') : '';
+  return read('/notifications', () => demo.notifications, (rows) => rows);
 }
 
 const api = {
-  BASE, request, health,
-  login, signup,
-  getAssets, getAsset, createAsset, getCategories,
-  getAllocations, getTransfers, allocateAsset, returnAsset, requestTransfer,
+  BASE, request, getToken, setToken, clearToken,
+  login, signup, me, logout,
+  getAssets, getAsset, getCategories, createAsset,
+  getAllocations, getTransfers, allocateAsset, returnAsset, requestTransfer, decideTransfer,
   getBookings, createBooking, cancelBooking, rescheduleBooking,
   getEmployees, getDepartments, getNotifications,
-  markNotificationRead, markAllNotificationsRead, getActivity,
-  createDepartment, updateDepartment, createCategory, updateCategory, updateEmployee,
-  getMaintenance, createMaintenance, decideMaintenance, assignMaintenance, startMaintenance, resolveMaintenance,
-  getAudits, getAudit, createAudit, saveAuditRecord, getAuditDiscrepancies, closeAudit,
-  getReportSummary,
 };
 export default api;

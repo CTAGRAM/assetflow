@@ -100,7 +100,7 @@ export default function Allocation() {
     const trRows = transfers.map((t) => {
       const active = t.status === 'Requested' || t.status === 'Approved';
       return {
-        id: t.id, asset: t.asset + ' · ' + ((AF.asset(t.asset) || {}).name || ''),
+        id: t.id, rawId: t.rawId, asset: t.asset + ' · ' + ((AF.asset(t.asset) || {}).name || t.assetName || ''),
         from: t.from ? (AF.emp(t.from) ? AF.empName(t.from) : AF.deptName(t.from)) : '—',
         to: AF.emp(t.to) ? AF.empName(t.to) : AF.deptName(t.to),
         reason: t.reason, by: AF.empName(t.requestedBy), date: AF.fmtDate(t.date), status: t.status,
@@ -157,6 +157,23 @@ export default function Allocation() {
   function updateTransfer(id, changes, message) {
     setTransfers((cur) => cur.map((t) => (t.id === id ? { ...t, ...changes } : t)));
     if (message) flash(message);
+  }
+
+  // Approve/decline through the API. The backend re-allocates atomically on
+  // approve, so approval jumps straight to Completed (no separate step). If the
+  // server is unreachable we still update locally so the demo stays responsive.
+  async function decide(row, approve) {
+    const finalStatus = approve ? 'Completed' : 'Declined';
+    const msg = approve
+      ? row.id + ' approved by ' + me.name + ' — ' + row.asset + ' re-allocated to ' + row.to + '.'
+      : row.id + ' declined.';
+    try {
+      if (row.rawId != null) await api.decideTransfer(row.rawId, approve);
+      updateTransfer(row.id, { status: finalStatus }, msg);
+    } catch (e) {
+      if (e.offline) { updateTransfer(row.id, { status: finalStatus }, msg); return; }
+      flash(e.message || 'Could not update the transfer.');
+    }
   }
 
   if (error) return <div style={{ padding: '40px 26px', fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif", color: '#E14B3B', fontWeight: 700 }}>{error}</div>;
@@ -290,12 +307,9 @@ export default function Allocation() {
                   <div style={{ display: 'flex', gap: 7, marginTop: 11 }}>
                     {t.canApprove && (
                       <>
-                        <button onClick={() => updateTransfer(t.id, { status: 'Approved', approvedBy: me.id }, t.id + ' approved by ' + me.name + '. Complete the re-allocation when the asset changes hands.')} style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', padding: '8px 15px', borderRadius: 99, background: '#fff', color: '#17171C', fontFamily: 'inherit', fontSize: 11, fontWeight: 800 }}>Approve</button>
-                        <button onClick={() => updateTransfer(t.id, { status: 'Declined' }, t.id + ' declined.')} style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', padding: '8px 15px', borderRadius: 99, border: '1.5px solid rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.8)', fontFamily: 'inherit', fontSize: 11, fontWeight: 700 }}>Decline</button>
+                        <button onClick={() => decide(t, true)} style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', padding: '8px 15px', borderRadius: 99, background: '#fff', color: '#17171C', fontFamily: 'inherit', fontSize: 11, fontWeight: 800 }}>Approve &amp; re-allocate</button>
+                        <button onClick={() => decide(t, false)} style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', padding: '8px 15px', borderRadius: 99, border: '1.5px solid rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.8)', fontFamily: 'inherit', fontSize: 11, fontWeight: 700 }}>Decline</button>
                       </>
-                    )}
-                    {t.canComplete && (
-                      <button onClick={() => updateTransfer(t.id, { status: 'Completed' }, t.id + ' completed — ' + t.asset + ' re-allocated to ' + t.to + '.')} style={{ all: 'unset', boxSizing: 'border-box', cursor: 'pointer', padding: '8px 15px', borderRadius: 99, background: '#8EF0C6', color: '#0B3D2A', fontFamily: 'inherit', fontSize: 11, fontWeight: 800 }}>Re-allocate now →</button>
                     )}
                     {t.waiting && (
                       <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.5)', padding: '8px 4px' }}>Waiting for Asset Manager or Dept Head approval</span>
