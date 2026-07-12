@@ -1,0 +1,59 @@
+/* AssetFlow design tokens.
+ *
+ * These are ported from the HTML/CSS prototypes in
+ * design/project/*.dc.html. The prototype chrome (topbar, cards, forms, the
+ * Explore/Login screens) renders in a purple + Plus Jakarta Sans system that
+ * is written inline in every mockup — those values are captured here as CSS
+ * custom properties so every screen stays consistent and a single edit
+ * re-themes the app. The status-chip colors come from the STATUS /
+ * BOOKING_STATUS / MAINT_STAGE maps in src/data.js and are applied per-chip in
+ * JS, so they are intentionally NOT duplicated here.
+ */
+
+:root {
+  /* type */
+  --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* brand / accent (purple) */
+  --accent: #5F4DEE;      /* primary purple */
+  --accent-dark: #4A39C9; /* hover / gradient end */
+  --accent-light: #7B6CF6;/* gradient start */
+  --accent-soft: #EEEBFE; /* soft purple hover surface */
+  --accent-softer: #F7F7FA;
+
+  /* surfaces */
+  --bg: #F4F3F0;          /* app page background */
+  --surface: #FFFFFF;     /* cards, topbar */
+  --nav-dark: #17171C;    /* pill nav track / dark chips */
+
+  /* ink / text */
+  --ink: #17171C;         /* strongest text (logo, headings) */
+  --ink-2: #2B2D33;       /* body heading text */
+  --ink-icon: #3F4046;    /* icon strokes */
+  --sub: #8A8E9C;         /* secondary text */
+  --sub-2: #7A7E8C;       /* muted links */
+  --faint: #AEB2C2;       /* faint labels */
+  --faint-2: #A2A3AE;     /* faintest */
+
+  /* lines / borders */
+  --line: #E7E7EE;        /* default border */
+  --line-soft: #EEEEF3;   /* softest divider */
+
+  /* feedback */
+  --danger: #E14B3B;      /* notification dot / errors */
+}
+
+/* base reset shared by all screens (mirrors the prototype's inline resets) */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--ink-2);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a { color: var(--accent); }
+a:hover { color: var(--accent-dark); }

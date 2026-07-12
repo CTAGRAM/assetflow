@@ -1,0 +1,28 @@
+/* Global, app-wide helpers shared across screens. Screen-specific styling
+ * lives with each screen (inline styles that mirror the prototype 1:1, or a
+ * co-located CSS file). Keep this file small and explainable. */
+
+/* Monospace treatment for asset tags / serials, matching the prototype. */
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* App shell content column: the routed page sits under the topbar on the
+ * page background, with comfortable page gutters. */
+.app-main {
+  min-height: calc(100vh - 59px); /* viewport minus topbar height */
+  background: var(--bg);
+}
+
+/* Visually-hidden helper for accessible labels without changing layout. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
