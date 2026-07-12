@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder{color:#A2A3AE} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:12px; font-weight:600; color:#3F4046; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Allocation &amp; Transfer">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="allocation" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Allocation &amp; Transfer</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">Assign assets, route transfer approvals, and check returns back in.</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; gap:9px; background:#E5F6EF; border:1px solid #BFE8D6; border-radius:14px; padding:11px 16px; margin-bottom:16px; font-size:12px; font-weight:700; color:#157A57">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>{{ toast }}
+      </div>
+    </sc-if>
+
+    <!-- allocate form -->
+    <div style="background:#fff; border-radius:22px; padding:18px 20px; margin-bottom:18px">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px">
+        <span style="width:30px; height:30px; border-radius:10px; background:#EEEBFE; display:grid; place-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5F4DEE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4M21 7H9M7 21l-4-4 4-4M3 17h12"></path></svg></span>
+        <span style="font-size:14.5px; font-weight:800">Allocate an asset</span>
+      </div>
+      <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap">
+        <div style="display:flex; flex-direction:column; gap:5px; flex:1.4; min-width:220px">
+          <label style="font-size:10.5px; font-weight:700; color:#3F4046">Asset</label>
+          <select value="{{ selAsset }}" onChange="{{ setSelAsset }}" style="box-sizing:border-box; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+            <option value="">Choose an asset…</option>
+            <sc-for list="{{ assetOptions }}" as="a" hint-placeholder-count="10"><option value="{{ a.tag }}">{{ a.label }}</option></sc-for>
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:5px; flex:1.2; min-width:200px">
+          <label style="font-size:10.5px; font-weight:700; color:#3F4046">Allocate to</label>
+          <select value="{{ selTo }}" onChange="{{ setSelTo }}" style="box-sizing:border-box; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+            <option value="">Employee or department…</option>
+            <sc-for list="{{ toOptions }}" as="o" hint-placeholder-count="12"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:5px; min-width:160px">
+          <label style="font-size:10.5px; font-weight:700; color:#3F4046">Expected return <span style="color:#A2A3AE; font-weight:600">(optional)</span></label>
+          <input type="date" value="{{ retDate }}" onChange="{{ setRetDate }}" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+        </div>
+        <button onClick="{{ allocate }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:12px 20px; border-radius:99px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12.5px; font-weight:800; box-shadow:0 6px 14px rgba(95,77,238,0.3)" style-hover="background:#4A39C9">Allocate</button>
+      </div>
+
+      <sc-if value="{{ blocked }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; gap:14px; margin-top:14px; background:#FDECEA; border:1.5px solid #F5C6BE; border-radius:16px; padding:13px 16px; flex-wrap:wrap">
+          <span style="width:34px; height:34px; border-radius:99px; background:#fff; display:grid; place-items:center; flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E14B3B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg></span>
+          <div style="flex:1; min-width:220px">
+            <div style="font-size:12.5px; font-weight:800; color:#B3271A">{{ blocked.title }}</div>
+            <div style="font-size:11.5px; font-weight:600; color:#8F2B1F; margin-top:2px">{{ blocked.body }}</div>
+          </div>
+          <button onClick="{{ requestTransfer }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:10px 18px; border-radius:99px; background:#17171C; color:#fff; font-family:inherit; font-size:12px; font-weight:800" style-hover="background:#5F4DEE">Request transfer instead →</button>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:16px; align-items:start">
+      <!-- active allocations / returns -->
+      <div style="background:#fff; border-radius:22px; overflow:hidden">
+        <div style="display:flex; align-items:center; gap:9px; padding:15px 18px; border-bottom:1px solid #F1F1F5">
+          <span style="font-size:13.5px; font-weight:800">Active allocations</span>
+          <span style="font-size:10.5px; font-weight:700; background:#F1F1F6; border-radius:99px; padding:2px 9px; color:#6B6C75">{{ allocCount }}</span>
+          <span style="margin-left:auto; font-size:10.5px; font-weight:700; color:#E14B3B">{{ overdueNote }}</span>
+        </div>
+        <sc-for list="{{ allocRows }}" as="r" hint-placeholder-count="6">
+          <div style="border-bottom:1px solid #F6F6F9; background:{{ r.rowBg }}">
+            <div style="display:flex; align-items:center; gap:11px; padding:11px 18px">
+              <sc-if value="{{ r.img }}" hint-placeholder-val="{{ false }}"><span style="{{ r.thumb }}"></span></sc-if>
+              <sc-if value="{{ r.noImg }}" hint-placeholder-val="{{ false }}"><span style="width:36px; height:36px; border-radius:11px; background:#F1F1F6; color:#A2A3AE; display:grid; place-items:center; font-size:10px; font-weight:800; flex:none">{{ r.abbr }}</span></sc-if>
+              <div style="flex:1; min-width:0">
+                <div style="display:flex; align-items:center; gap:7px">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:#5F4DEE">{{ r.tag }}</span>
+                  <span style="font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ r.name }}</span>
+                </div>
+                <div style="font-size:11px; font-weight:600; color:#6B6C75; margin-top:1px">→ {{ r.holder }} · since {{ r.since }}</div>
+              </div>
+              <div style="text-align:right">
+                <span style="font-size:10px; font-weight:700; border-radius:99px; padding:4px 10px; background:{{ r.chipBg }}; color:{{ r.chipInk }}">{{ r.chip }}</span>
+                <div style="font-size:10px; font-weight:600; color:#A2A3AE; margin-top:3px">{{ r.dueLine }}</div>
+              </div>
+              <button onClick="{{ r.checkin }}" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:11px; font-weight:800; padding:7px 13px; border-radius:99px; border:1.5px solid {{ r.ciBorder }}; color:{{ r.ciInk }}; background:{{ r.ciBg }}" style-hover="border-color:#17171C">{{ r.ciLabel }}</button>
+            </div>
+            <sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:9px; align-items:flex-end; padding:2px 18px 14px; flex-wrap:wrap; background:#FAFAFE">
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:130px">
+                  <label style="font-size:10px; font-weight:700; color:#A2A3AE">Condition on return</label>
+                  <select value="{{ ciCond }}" onChange="{{ setCiCond }}" style="box-sizing:border-box; font-size:12px; padding:9px 11px; border-radius:10px; background:#fff; border:1.5px solid #DCD6FB"><option>Good</option><option>Fair</option><option>Poor</option><option>Damaged</option></select>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:200px">
+                  <label style="font-size:10px; font-weight:700; color:#A2A3AE">Check-in notes</label>
+                  <input value="{{ ciNotes }}" onChange="{{ setCiNotes }}" placeholder="e.g. scuff on lid, charger returned" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12px; padding:9px 11px; border-radius:10px; background:#fff; border:1.5px solid #DCD6FB">
+                </div>
+                <button onClick="{{ r.confirm }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:10px 16px; border-radius:99px; background:#17171C; color:#fff; font-family:inherit; font-size:11.5px; font-weight:800" style-hover="background:#5F4DEE">Mark returned</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noAllocs }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:36px 20px; text-align:center; font-size:12px; font-weight:600; color:#A2A3AE">Everything is back on the shelf — no active allocations.</div>
+        </sc-if>
+      </div>
+
+      <!-- transfers dark panel -->
+      <div style="background:#17171C; border-radius:26px; padding:16px" id="transfers">
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px; padding:0 4px">
+          <span style="color:#fff; font-size:14px; font-weight:800">Transfer requests</span>
+          <span style="font-size:10.5px; font-weight:700; background:#26262C; color:#9A9AA5; border-radius:99px; padding:2px 9px">{{ trCount }}</span>
+          <span style="margin-left:auto; font-size:10px; font-weight:600; color:#9A9AA5">requested → approved → re-allocated</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <sc-for list="{{ trRows }}" as="t" hint-placeholder-count="3">
+            <div style="border-radius:18px; padding:14px 16px; background:{{ t.bg }}">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:{{ t.idInk }}">{{ t.id }}</span>
+                <span style="font-size:12.5px; font-weight:800; color:#fff">{{ t.asset }}</span>
+                <span style="font-size:10px; font-weight:700; border-radius:99px; padding:3px 9px; background:{{ t.chipBg }}; color:{{ t.chipInk }}; margin-left:auto">{{ t.status }}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:7px; margin-top:8px; font-size:11.5px; font-weight:700; color:rgba(255,255,255,0.85)">
+                {{ t.from }} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg> {{ t.to }}
+              </div>
+              <div style="font-size:10.5px; font-weight:500; color:rgba(255,255,255,0.55); margin-top:5px; line-height:1.45">“{{ t.reason }}” — {{ t.by }}, {{ t.date }}</div>
+              <sc-if value="{{ t.showActions }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:7px; margin-top:11px">
+                  <sc-if value="{{ t.canApprove }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ t.approve }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:8px 15px; border-radius:99px; background:#fff; color:#17171C; font-family:inherit; font-size:11px; font-weight:800" style-hover="background:#EEEBFE">Approve</button>
+                    <button onClick="{{ t.reject }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:8px 15px; border-radius:99px; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.8); font-family:inherit; font-size:11px; font-weight:700" style-hover="border-color:#E14B3B; color:#F08B7E">Decline</button>
+                  </sc-if>
+                  <sc-if value="{{ t.canComplete }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ t.complete }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:8px 15px; border-radius:99px; background:#8EF0C6; color:#0B3D2A; font-family:inherit; font-size:11px; font-weight:800" style-hover="background:#fff">Re-allocate now →</button>
+                  </sc-if>
+                  <sc-if value="{{ t.waiting }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10.5px; font-weight:700; color:rgba(255,255,255,0.5); padding:8px 4px">Waiting for Asset Manager or Dept Head approval</span>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noTr }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:32px 16px; text-align:center; border-radius:18px; background:#1E1E24; font-size:12px; font-weight:600; color:#9A9AA5">No transfer requests right now.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { selAsset: '', selTo: '', retDate: '', toast: null, tried: false, openCi: null, ciCond: 'Good', ciNotes: '', allocs: null, transfers: null, statusOv: {}, holderOv: {} };
+  componentDidMount() {
+    const AF = window.AF; if (!AF) return;
+    this.setState({
+      allocs: AF.allocations.filter(a => a.status === 'Active').map(a => ({ ...a })),
+      transfers: AF.transfers.map(t => ({ ...t })),
+    });
+  }
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  flash(m) { this.setState({ toast: m }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: null }), 4200); }
+  renderVals() {
+    const AF = window.AF; if (!AF || !this.state.allocs) return {};
+    const s = this.state, role = AF.role(), me = AF.me();
+    const canApprove = role === 'Asset Manager' || role === 'Department Head' || role === 'Admin';
+    const st = a => s.statusOv[a.tag] || a.status;
+
+    const assetOptions = AF.assets.filter(a => ['Available', 'Allocated', 'Reserved'].indexOf(st(a)) >= 0).map(a => ({
+      tag: a.tag, label: a.tag + ' — ' + a.name + (st(a) === 'Available' ? '' : ' (' + st(a) + ')'),
+    }));
+    const toOptions = AF.employees.filter(e => e.active).map(e => ({ v: 'e:' + e.id, label: e.name + ' · ' + AF.deptName(e.dept) }))
+      .concat(AF.departments.filter(d => d.active).map(d => ({ v: 'd:' + d.id, label: d.name + ' (department pool)' })));
+
+    // blocked?
+    const selA = AF.asset(s.selAsset);
+    let blocked = false;
+    if (s.tried && selA && st(selA) !== 'Available') {
+      const holder = s.holderOv[selA.tag] || (selA.holderType === 'department' ? AF.deptName(selA.holder) : AF.empName(selA.holder));
+      blocked = {
+        title: selA.tag + ' is ' + st(selA).toLowerCase() + ' — allocation blocked.',
+        body: 'Currently held by ' + (holder || 'another party') + (selA.expReturn ? ', expected back ' + AF.fmtDate(selA.expReturn) : '') + '. Raise a transfer request and the holder\'s side approves the handover.',
+      };
+    }
+
+    const allocRows = s.allocs.map(al => {
+      const a = AF.asset(al.asset) || {};
+      const od = al.expReturn && AF.daysFromToday(al.expReturn) < 0;
+      const open = s.openCi === al.id;
+      return {
+        tag: al.asset, name: a.name || al.asset, img: a.img || false, noImg: !a.img, abbr: (a.name || '??').slice(0, 2).toUpperCase(),
+        thumb: a.img ? { display: 'block', width: 36, height: 36, borderRadius: 11, flex: 'none', background: '#F1F1F6 url(' + a.img + ') center/cover no-repeat' } : false,
+        holder: al.toType === 'department' ? AF.deptName(al.to) + ' (dept)' : AF.empName(al.to),
+        since: AF.fmtDate(al.date),
+        chip: od ? 'Overdue' : al.expReturn ? 'On loan' : 'Open-ended',
+        chipBg: od ? '#FDECEA' : '#E9EFFC', chipInk: od ? '#C0331F' : '#2456C4',
+        dueLine: al.expReturn ? (od ? Math.abs(AF.daysFromToday(al.expReturn)) + ' days late · due ' + AF.fmtDate(al.expReturn) : 'due ' + AF.fmtDate(al.expReturn)) : 'no return date',
+        rowBg: od ? '#FFFBFA' : 'transparent',
+        ciLabel: open ? 'Close' : 'Check in', ciBorder: open ? '#17171C' : '#E7E7EE',
+        ciInk: open ? '#fff' : '#3F4046', ciBg: open ? '#17171C' : '#fff',
+        open,
+        checkin: () => this.setState({ openCi: open ? null : al.id, ciCond: 'Good', ciNotes: '' }),
+        confirm: () => {
+          this.setState({
+            allocs: s.allocs.filter(x => x.id !== al.id),
+            statusOv: { ...s.statusOv, [al.asset]: 'Available' }, openCi: null,
+          });
+          this.flash(al.asset + ' checked in as ' + s.ciCond + (s.ciNotes ? ' — “' + s.ciNotes + '”' : '') + '. Asset is Available again.');
+        },
+      };
+    });
+    const overdueCount = allocRows.filter(r => r.chip === 'Overdue').length;
+
+    const trRows = s.transfers.map(t => {
+      const active = t.status === 'Requested' || t.status === 'Approved';
+      return {
+        id: t.id, asset: t.asset + ' · ' + ((AF.asset(t.asset) || {}).name || ''),
+        from: t.from ? (AF.emp(t.from) ? AF.empName(t.from) : AF.deptName(t.from)) : '—',
+        to: AF.emp(t.to) ? AF.empName(t.to) : AF.deptName(t.to),
+        reason: t.reason, by: AF.empName(t.requestedBy), date: AF.fmtDate(t.date),
+        status: t.status,
+        bg: active ? 'linear-gradient(155deg,#7168F0,#4E3BD8)' : '#1E1E24',
+        idInk: active ? 'rgba(255,255,255,0.7)' : '#9A9AA5',
+        chipBg: t.status === 'Requested' ? '#FBF1E0' : t.status === 'Approved' ? '#8EF0C6' : t.status === 'Declined' ? '#FDECEA' : 'rgba(255,255,255,0.14)',
+        chipInk: t.status === 'Requested' ? '#A65B04' : t.status === 'Approved' ? '#0B3D2A' : t.status === 'Declined' ? '#C0331F' : 'rgba(255,255,255,0.75)',
+        showActions: active,
+        canApprove: t.status === 'Requested' && canApprove,
+        waiting: t.status === 'Requested' && !canApprove,
+        canComplete: t.status === 'Approved' && canApprove,
+        approve: () => { t.status = 'Approved'; t.approvedBy = me.id; this.forceUpdate(); this.flash(t.id + ' approved by ' + me.name + '. Complete the re-allocation when the asset changes hands.'); },
+        reject: () => { t.status = 'Declined'; this.forceUpdate(); this.flash(t.id + ' declined.'); },
+        complete: () => {
+          t.status = 'Completed'; this.forceUpdate();
+          this.flash(t.id + ' completed — ' + t.asset + ' re-allocated to ' + (AF.emp(t.to) ? AF.empName(t.to) : AF.deptName(t.to)) + '.');
+        },
+      };
+    });
+
+    return {
+      toast: s.toast || false,
+      assetOptions, toOptions,
+      selAsset: s.selAsset, setSelAsset: e => this.setState({ selAsset: e.target.value, tried: false }),
+      selTo: s.selTo, setSelTo: this.set('selTo'),
+      retDate: s.retDate, setRetDate: this.set('retDate'),
+      allocate: () => {
+        if (!s.selAsset || !s.selTo) { this.flash('Pick an asset and who it goes to first.'); return; }
+        const a = AF.asset(s.selAsset);
+        if (st(a) !== 'Available') { this.setState({ tried: true }); return; }
+        const isDept = s.selTo.indexOf('d:') === 0, id = s.selTo.slice(2);
+        const na = { id: 'AL-' + Math.floor(130 + Math.random() * 800), asset: a.tag, to: id, toType: isDept ? 'department' : 'employee', by: me.id, date: AF.TODAY, expReturn: s.retDate || null, status: 'Active' };
+        this.setState({ allocs: [na].concat(s.allocs), statusOv: { ...s.statusOv, [a.tag]: 'Allocated' }, holderOv: { ...s.holderOv, [a.tag]: isDept ? AF.deptName(id) : AF.empName(id) }, selAsset: '', selTo: '', retDate: '', tried: false });
+        this.flash(a.tag + ' allocated to ' + (isDept ? AF.deptName(id) : AF.empName(id)) + (s.retDate ? ', due back ' + AF.fmtDate(s.retDate) : '') + '.');
+      },
+      blocked,
+      requestTransfer: () => {
+        const a = AF.asset(s.selAsset);
+        const isDept = s.selTo.indexOf('d:') === 0, id = s.selTo.slice(2);
+        const nt = { id: 'TR-' + Math.floor(32 + Math.random() * 60), asset: a.tag, from: a.holder, to: id, requestedBy: me.id, date: AF.TODAY, status: 'Requested', reason: 'Requested from allocation screen — asset currently held.' };
+        this.setState({ transfers: [nt].concat(s.transfers), tried: false, selAsset: '', selTo: '' });
+        this.flash(nt.id + ' created — transfer of ' + a.tag + ' now waits for approval.');
+      },
+      allocRows, allocCount: allocRows.length, noAllocs: allocRows.length === 0,
+      overdueNote: overdueCount ? overdueCount + ' overdue' : '',
+      ciCond: s.ciCond, setCiCond: this.set('ciCond'), ciNotes: s.ciNotes, setCiNotes: this.set('ciNotes'),
+      trRows, trCount: s.transfers.filter(t => t.status === 'Requested' || t.status === 'Approved').length, noTr: trRows.length === 0,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

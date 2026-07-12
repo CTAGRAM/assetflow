@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder{color:#A2A3AE} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:12px; font-weight:600; color:#3F4046; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Resource Booking">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="booking" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Resource Booking</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">Week of July 13 – 17, 2026 · pick a shared resource, then grab a free slot.</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ reminderBanner }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; gap:9px; background:#EEEBFE; border:1px solid #DCD6FB; border-radius:14px; padding:11px 16px; margin-bottom:14px; font-size:12px; font-weight:700; color:#4A39C9">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"></path></svg>
+        {{ reminderBanner }}
+      </div>
+    </sc-if>
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; gap:9px; background:#E5F6EF; border:1px solid #BFE8D6; border-radius:14px; padding:11px 16px; margin-bottom:14px; font-size:12px; font-weight:700; color:#157A57">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>{{ toast }}
+      </div>
+    </sc-if>
+
+    <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap">
+      <sc-for list="{{ resources }}" as="r" hint-placeholder-count="6">
+        <button onClick="{{ r.pick }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:9px; padding:8px 14px 8px 8px; border-radius:99px; background:{{ r.bg }}; border:1.5px solid {{ r.border }}" style-hover="border-color:#5F4DEE">
+          <sc-if value="{{ r.img }}" hint-placeholder-val="{{ false }}"><span style="{{ r.thumb }}"></span></sc-if>
+          <sc-if value="{{ r.noImg }}" hint-placeholder-val="{{ false }}"><span style="width:28px; height:28px; border-radius:99px; background:#F1F1F6; display:grid; place-items:center; font-size:9px; font-weight:800; color:#A2A3AE">{{ r.abbr }}</span></sc-if>
+          <span style="display:flex; flex-direction:column; align-items:flex-start">
+            <span style="font-size:11.5px; font-weight:800; color:{{ r.ink }}">{{ r.name }}</span>
+            <span style="font-size:9.5px; font-weight:600; color:{{ r.sub }}">{{ r.meta }}</span>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:grid; grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr); gap:16px; align-items:start">
+      <!-- calendar -->
+      <div style="background:#fff; border-radius:22px; padding:16px 16px 18px; overflow-x:auto">
+        <div style="display:grid; grid-template-columns:44px repeat(5, 1fr); gap:6px; min-width:640px">
+          <span></span>
+          <sc-for list="{{ days }}" as="d" hint-placeholder-count="5">
+            <div style="text-align:center; padding-bottom:8px">
+              <div style="font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#A2A3AE">{{ d.dow }}</div>
+              <div style="font-size:15px; font-weight:800; margin-top:1px; color:{{ d.ink }}">{{ d.num }}</div>
+            </div>
+          </sc-for>
+          <div style="position:relative; height:440px">
+            <sc-for list="{{ hours }}" as="h" hint-placeholder-count="10">
+              <div style="position:absolute; left:0; right:0; top:{{ h.top }}px; font-size:9px; font-weight:700; color:#C9C9D6; text-align:right; padding-right:6px">{{ h.label }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ days }}" as="d" hint-placeholder-count="5">
+            <div style="position:relative; height:440px; background:{{ d.colBg }}; border-radius:12px">
+              <sc-for list="{{ d.lines }}" as="ln" hint-placeholder-count="10">
+                <div style="position:absolute; left:0; right:0; top:{{ ln.top }}px; border-top:1px dashed #EFEFF4"></div>
+              </sc-for>
+              <sc-for list="{{ d.blocks }}" as="b" hint-placeholder-count="2">
+                <button onClick="{{ b.pick }}" style="all:unset; box-sizing:border-box; cursor:pointer; position:absolute; left:4px; right:4px; top:{{ b.top }}px; height:{{ b.h }}px; border-radius:10px; background:{{ b.bg }}; border:1.5px solid {{ b.border }}; padding:5px 8px; overflow:hidden" style-hover="filter:brightness(1.05)">
+                  <div style="font-size:10px; font-weight:800; color:{{ b.ink }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-decoration:{{ b.deco }}">{{ b.title }}</div>
+                  <div style="font-size:9px; font-weight:600; color:{{ b.sub }}">{{ b.time }}</div>
+                </button>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- booking form + list -->
+      <div style="display:flex; flex-direction:column; gap:14px">
+        <div style="background:#17171C; border-radius:22px; padding:18px">
+          <div style="font-size:13.5px; font-weight:800; color:#fff; margin-bottom:4px">{{ formTitle }}</div>
+          <div style="font-size:10.5px; font-weight:600; color:#9A9AA5; margin-bottom:13px">{{ resName }} · back-to-back slots are fine, overlaps are rejected.</div>
+          <div style="display:flex; flex-direction:column; gap:9px">
+            <input value="{{ fTitle }}" onChange="{{ setFTitle }}" placeholder="What's it for? e.g. Sprint review" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12px; font-weight:600; color:#fff; padding:10px 12px; border-radius:11px; background:#26262C; border:1.5px solid #33333B">
+            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px">
+              <select value="{{ fDay }}" onChange="{{ setFDay }}" style="box-sizing:border-box; font-size:12px; color:#fff; padding:10px 10px; border-radius:11px; background:#26262C; border:1.5px solid #33333B">
+                <sc-for list="{{ dayOptions }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+              </select>
+              <select value="{{ fStart }}" onChange="{{ setFStart }}" style="box-sizing:border-box; font-size:12px; color:#fff; padding:10px 10px; border-radius:11px; background:#26262C; border:1.5px solid #33333B">
+                <sc-for list="{{ timeOptions }}" as="o" hint-placeholder-count="10"><option value="{{ o.v }}">{{ o.v }}</option></sc-for>
+              </select>
+              <select value="{{ fEnd }}" onChange="{{ setFEnd }}" style="box-sizing:border-box; font-size:12px; color:#fff; padding:10px 10px; border-radius:11px; background:#26262C; border:1.5px solid #33333B">
+                <sc-for list="{{ timeOptions }}" as="o" hint-placeholder-count="10"><option value="{{ o.v }}">{{ o.v }}</option></sc-for>
+              </select>
+            </div>
+            <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:8px; align-items:flex-start; font-size:11px; font-weight:700; color:#F08B7E; background:rgba(225,75,59,0.14); border:1px solid rgba(225,75,59,0.35); border-radius:11px; padding:9px 12px; line-height:1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none; margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+                <span>{{ formError }}</span>
+              </div>
+            </sc-if>
+            <div style="display:flex; gap:8px">
+              <button onClick="{{ submit }}" style="all:unset; box-sizing:border-box; cursor:pointer; flex:1; text-align:center; padding:11px; border-radius:99px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12px; font-weight:800; box-shadow:0 6px 14px rgba(95,77,238,0.4)" style-hover="background:#7168F0">{{ submitLabel }}</button>
+              <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ cancelEdit }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:11px 16px; border-radius:99px; border:1.5px solid #33333B; color:#9A9AA5; font-family:inherit; font-size:12px; font-weight:700" style-hover="color:#fff">Cancel</button>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff; border-radius:22px; overflow:hidden">
+          <div style="display:flex; align-items:center; padding:13px 16px; border-bottom:1px solid #F1F1F5">
+            <span style="font-size:12.5px; font-weight:800">Bookings — {{ resName }}</span>
+            <span style="margin-left:auto; font-size:10px; font-weight:700; color:#A2A3AE">{{ bkCount }}</span>
+          </div>
+          <sc-for list="{{ bkRows }}" as="b" hint-placeholder-count="5">
+            <div style="padding:10px 16px; border-bottom:1px solid #F6F6F9; opacity:{{ b.opacity }}">
+              <div style="display:flex; align-items:center; gap:8px">
+                <span style="width:7px; height:7px; border-radius:99px; background:{{ b.dot }}; flex:none"></span>
+                <span style="font-size:12px; font-weight:700; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-decoration:{{ b.deco }}">{{ b.title }}</span>
+                <span style="font-size:9.5px; font-weight:700; border-radius:99px; padding:3px 8px; background:{{ b.chipBg }}; color:{{ b.chipInk }}">{{ b.status }}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:4px; padding-left:15px">
+                <span style="font-size:10.5px; font-weight:600; color:#6B6C75">{{ b.when }} · {{ b.by }}</span>
+                <span style="margin-left:auto; display:flex; gap:5px">
+                  <sc-if value="{{ b.actionable }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ b.remind }}" title="Reminder 15 min before" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:9.5px; font-weight:800; padding:4px 9px; border-radius:99px; background:{{ b.remBg }}; color:{{ b.remInk }}; border:1px solid {{ b.remBorder }}">{{ b.remLabel }}</button>
+                    <button onClick="{{ b.resched }}" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:9.5px; font-weight:800; padding:4px 9px; border-radius:99px; border:1px solid #E7E7EE; color:#3F4046" style-hover="border-color:#5F4DEE; color:#5F4DEE">Reschedule</button>
+                    <button onClick="{{ b.cancel }}" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:9.5px; font-weight:800; padding:4px 9px; border-radius:99px; border:1px solid #E7E7EE; color:#C0331F" style-hover="border-color:#C0331F">Cancel</button>
+                  </sc-if>
+                </span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noBk }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:30px 16px; text-align:center; font-size:11.5px; font-weight:600; color:#A2A3AE">No bookings yet for this resource — the whole week is free.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { res: 'AF-0011', bookings: null, fTitle: '', fDay: '2026-07-13', fStart: '09:00', fEnd: '10:00', err: null, toast: null, editId: null, reminders: {} };
+  componentDidMount() { const AF = window.AF; if (AF) this.setState({ bookings: AF.bookings.map(b => ({ ...b })) }); }
+  set(k) { return e => this.setState({ [k]: e.target.value, err: null }); }
+  flash(m) { this.setState({ toast: m }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: null }), 4200); }
+  renderVals() {
+    const AF = window.AF; if (!AF || !this.state.bookings) return {};
+    const s = this.state, me = AF.me();
+    const mins = t => parseInt(t.slice(0, 2), 10) * 60 + parseInt(t.slice(3), 10);
+    const H0 = 8 * 60, H1 = 18 * 60, PX = 440;
+    const y = m => Math.round((m - H0) / (H1 - H0) * PX);
+
+    const resList = AF.assets.filter(a => a.bookable);
+    const resources = resList.map(a => {
+      const on = a.tag === s.res;
+      const n = s.bookings.filter(b => b.resource === a.tag && b.status !== 'Cancelled').length;
+      return { name: a.name, meta: a.loc + ' · ' + n + ' bookings', img: a.img || false, noImg: !a.img, abbr: a.name.slice(0, 2).toUpperCase(),
+        thumb: a.img ? { display: 'block', width: 28, height: 28, borderRadius: 99, flex: 'none', background: '#F1F1F6 url(' + a.img + ') center/cover no-repeat' } : false,
+        bg: on ? '#17171C' : '#fff', border: on ? '#17171C' : '#E7E7EE', ink: on ? '#fff' : '#17171C', sub: on ? '#9A9AA5' : '#A2A3AE',
+        pick: () => this.setState({ res: a.tag, editId: null, err: null }) };
+    });
+    const resAsset = AF.asset(s.res) || {};
+
+    const weekDays = ['2026-07-13', '2026-07-14', '2026-07-15', '2026-07-16', '2026-07-17'];
+    const dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const stColor = { Upcoming: ['#EEEBFE', '#B8AEF7', '#4A39C9', '#8A7DF2'], Ongoing: ['#E5F6EF', '#8FDDBB', '#157A57', '#41B487'], Completed: ['#F1F1F6', '#E1E1E8', '#8A8B95', '#B4B5BE'], Cancelled: ['#FDECEA', '#F5C6BE', '#C0331F', '#E39C91'] };
+
+    const days = weekDays.map((date, i) => {
+      const blocks = s.bookings.filter(b => b.resource === s.res && b.date === date).map(b => {
+        const c = stColor[b.status] || stColor.Upcoming;
+        return { title: b.title, time: b.start + ' – ' + b.end,
+          top: y(mins(b.start)) + 2, h: Math.max(26, y(mins(b.end)) - y(mins(b.start)) - 4),
+          bg: c[0], border: c[1], ink: c[2], sub: c[3],
+          deco: b.status === 'Cancelled' ? 'line-through' : 'none',
+          pick: () => this.flash(b.title + ' · ' + b.start + '–' + b.end + ' · ' + b.status + ' · booked by ' + AF.empName(b.by)) };
+      });
+      return { dow: dows[i], num: 13 + i, ink: '#17171C', colBg: '#FAFAFC', blocks,
+        lines: Array.from({ length: 10 }, (_, k) => ({ top: y(H0 + (k + 1) * 60) })) };
+    });
+    const hours = Array.from({ length: 10 }, (_, k) => ({ top: y(H0 + k * 60) - 5, label: (8 + k) + ':00' }));
+
+    // form
+    const timeOptions = [];
+    for (let h = 8; h <= 18; h++) { timeOptions.push({ v: String(h).padStart(2, '0') + ':00' }); if (h < 18) timeOptions.push({ v: String(h).padStart(2, '0') + ':30' }); }
+    const dayOptions = weekDays.map((v, i) => ({ v, label: dows[i] + ' Jul ' + (13 + i) }));
+
+    const findConflict = (excl) => s.bookings.find(b => b.resource === s.res && b.date === s.fDay && b.status !== 'Cancelled' && b.id !== excl && mins(s.fStart) < mins(b.end) && mins(s.fEnd) > mins(b.start));
+
+    const bkAll = s.bookings.filter(b => b.resource === s.res).sort((a, b) => (a.date + a.start) < (b.date + b.start) ? -1 : 1);
+    const bkRows = bkAll.map(b => {
+      const c = stColor[b.status] || stColor.Upcoming;
+      const rem = !!s.reminders[b.id];
+      return { title: b.title, status: b.status, chipBg: c[0], chipInk: c[2], dot: c[2],
+        deco: b.status === 'Cancelled' ? 'line-through' : 'none', opacity: b.status === 'Cancelled' || b.status === 'Completed' ? 0.6 : 1,
+        when: AF.fmtDate(b.date) + ', ' + b.start + '–' + b.end, by: AF.empName(b.by),
+        actionable: b.status === 'Upcoming',
+        remLabel: rem ? '🔔 15 min' : 'Remind me', remBg: rem ? '#EEEBFE' : '#fff', remInk: rem ? '#4A39C9' : '#3F4046', remBorder: rem ? '#B8AEF7' : '#E7E7EE',
+        remind: () => { this.setState({ reminders: { ...s.reminders, [b.id]: !rem } }); this.flash(rem ? 'Reminder removed for “' + b.title + '”.' : 'You\'ll be pinged 15 minutes before “' + b.title + '”.'); },
+        resched: () => this.setState({ editId: b.id, fTitle: b.title, fDay: b.date, fStart: b.start, fEnd: b.end, err: null }),
+        cancel: () => { b.status = 'Cancelled'; this.forceUpdate(); this.flash('“' + b.title + '” cancelled — the slot is free again.'); },
+      };
+    });
+
+    const nextRem = bkAll.filter(b => s.reminders[b.id] && b.status === 'Upcoming')[0];
+
+    return {
+      resources, resName: resAsset.name || s.res,
+      days, hours, dayOptions, timeOptions,
+      formTitle: s.editId ? 'Reschedule booking' : 'New booking',
+      isEditing: !!s.editId, submitLabel: s.editId ? 'Save new slot' : 'Book slot',
+      cancelEdit: () => this.setState({ editId: null, fTitle: '', err: null }),
+      fTitle: s.fTitle, setFTitle: this.set('fTitle'), fDay: s.fDay, setFDay: this.set('fDay'),
+      fStart: s.fStart, setFStart: this.set('fStart'), fEnd: s.fEnd, setFEnd: this.set('fEnd'),
+      formError: s.err || false,
+      submit: () => {
+        if (!s.fTitle.trim()) { this.setState({ err: 'Give the booking a title.' }); return; }
+        if (mins(s.fEnd) <= mins(s.fStart)) { this.setState({ err: 'End time must be after start time.' }); return; }
+        const cf = findConflict(s.editId);
+        if (cf) { this.setState({ err: 'That slot overlaps “' + cf.title + '” (' + cf.start + '–' + cf.end + ', ' + AF.empName(cf.by) + '). Back-to-back is fine — try starting at ' + cf.end + '.' }); return; }
+        if (s.editId) {
+          const b = s.bookings.find(x => x.id === s.editId);
+          b.title = s.fTitle.trim(); b.date = s.fDay; b.start = s.fStart; b.end = s.fEnd;
+          this.setState({ editId: null, fTitle: '', err: null });
+          this.flash('Rescheduled to ' + AF.fmtDate(s.fDay) + ', ' + s.fStart + '–' + s.fEnd + '.');
+        } else {
+          const nb = { id: 'BK-' + Math.floor(300 + Math.random() * 600), resource: s.res, by: me.id, title: s.fTitle.trim(), date: s.fDay, start: s.fStart, end: s.fEnd, status: 'Upcoming' };
+          this.setState({ bookings: s.bookings.concat([nb]), fTitle: '', err: null });
+          this.flash('Booked ' + (resAsset.name || s.res) + ' — ' + AF.fmtDate(s.fDay) + ', ' + s.fStart + '–' + s.fEnd + '. Confirmation sent.');
+        }
+      },
+      bkRows, bkCount: bkAll.length + ' total', noBk: bkAll.length === 0,
+      toast: s.toast || false,
+      reminderBanner: nextRem ? 'Reminder armed: “' + nextRem.title + '” starts ' + AF.fmtDate(nextRem.date) + ' at ' + nextRem.start + ' — you\'ll be notified 15 minutes before.' : false,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

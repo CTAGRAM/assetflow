@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder{color:#A2A3AE} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:11.5px; font-weight:600; color:#3F4046; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Organization Setup">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="org" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Organization Setup</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">Departments, asset categories, and the employee directory — Admin only.</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ locked }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff; border-radius:22px; padding:56px 20px; text-align:center">
+        <div style="width:52px; height:52px; border-radius:99px; background:#F1F1F6; display:grid; place-items:center; margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg></div>
+        <div style="font-size:14px; font-weight:800">Admins only</div>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:4px">You're viewing as {{ roleName }}. Switch to Admin in the top bar to manage the organization.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+      <div>
+      <div style="display:flex; gap:2px; background:#17171C; border-radius:99px; padding:4px; width:fit-content; margin-bottom:18px">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.pick }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:8px 16px; border-radius:99px; font-family:inherit; font-size:12px; font-weight:700; color:{{ t.color }}; background:{{ t.bg }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; gap:9px; background:#E5F6EF; border:1px solid #BFE8D6; border-radius:14px; padding:11px 16px; margin-bottom:16px; font-size:12px; font-weight:700; color:#157A57">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>{{ toast }}
+        </div>
+      </sc-if>
+
+      <!-- TAB A: DEPARTMENTS -->
+      <sc-if value="{{ tabDepts }}" hint-placeholder-val="{{ true }}">
+        <div>
+        <div style="background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:14px; display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap">
+          <div style="display:flex; flex-direction:column; gap:5px; flex:1; min-width:160px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">New department</label>
+            <input value="{{ ndName }}" onChange="{{ setNdName }}" placeholder="e.g. Marketing" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:160px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Department Head</label>
+            <select value="{{ ndHead }}" onChange="{{ setNdHead }}" style="box-sizing:border-box; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1"><option value="">Unassigned</option><sc-for list="{{ headOptions }}" as="h" hint-placeholder-count="6"><option value="{{ h.id }}">{{ h.name }}</option></sc-for></select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:160px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Parent (optional)</label>
+            <select value="{{ ndParent }}" onChange="{{ setNdParent }}" style="box-sizing:border-box; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1"><option value="">None — top level</option><sc-for list="{{ parentOptions }}" as="p" hint-placeholder-count="6"><option value="{{ p.id }}">{{ p.name }}</option></sc-for></select>
+          </div>
+          <button onClick="{{ addDept }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:10px 18px; border-radius:99px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12px; font-weight:800; box-shadow:0 6px 14px rgba(95,77,238,0.3)" style-hover="background:#4A39C9">+ Create</button>
+        </div>
+
+        <div style="background:#fff; border-radius:22px; overflow:hidden">
+          <div style="display:grid; grid-template-columns:1.4fr 1.1fr 1fr 90px 110px 150px; gap:10px; padding:12px 18px; border-bottom:1px solid #F1F1F5; font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#A2A3AE">
+            <span>Department</span><span>Head</span><span>Parent</span><span>People</span><span>Status</span><span style="text-align:right">Actions</span>
+          </div>
+          <sc-for list="{{ deptRows }}" as="r" hint-placeholder-count="7">
+            <div style="border-bottom:1px solid #F6F6F9">
+              <div style="display:grid; grid-template-columns:1.4fr 1.1fr 1fr 90px 110px 150px; gap:10px; align-items:center; padding:11px 18px; opacity:{{ r.opacity }}">
+                <span style="display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700">
+                  <sc-if value="{{ r.isChild }}" hint-placeholder-val="{{ false }}"><span style="color:#C9C9D6">└</span></sc-if>{{ r.name }}</span>
+                <span style="font-size:11.5px; font-weight:600; color:{{ r.headColor }}">{{ r.head }}</span>
+                <span style="font-size:11.5px; font-weight:600; color:#6B6C75">{{ r.parent }}</span>
+                <span style="font-size:11.5px; font-weight:700; font-variant-numeric:tabular-nums">{{ r.people }}</span>
+                <span><span style="font-size:10px; font-weight:700; border-radius:99px; padding:4px 10px; background:{{ r.stBg }}; color:{{ r.stInk }}">{{ r.st }}</span></span>
+                <span style="display:flex; gap:6px; justify-content:flex-end">
+                  <button onClick="{{ r.edit }}" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:10.5px; font-weight:700; padding:5px 11px; border-radius:99px; border:1px solid #E7E7EE; color:#3F4046" style-hover="border-color:#5F4DEE; color:#5F4DEE">{{ r.editLabel }}</button>
+                  <button onClick="{{ r.toggle }}" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:10.5px; font-weight:700; padding:5px 11px; border-radius:99px; border:1px solid #E7E7EE; color:{{ r.tgColor }}" style-hover="border-color:#17171C">{{ r.tgLabel }}</button>
+                </span>
+              </div>
+              <sc-if value="{{ r.editing }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:10px; align-items:flex-end; padding:4px 18px 14px; flex-wrap:wrap; background:#FAFAFE">
+                  <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:140px">
+                    <label style="font-size:10px; font-weight:700; color:#A2A3AE">Name</label>
+                    <input value="{{ r.eName }}" onChange="{{ r.setEName }}" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12px; padding:8px 11px; border-radius:10px; background:#fff; border:1.5px solid #DCD6FB">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:4px; min-width:150px">
+                    <label style="font-size:10px; font-weight:700; color:#A2A3AE">Head</label>
+                    <select value="{{ r.eHead }}" onChange="{{ r.setEHead }}" style="box-sizing:border-box; font-size:12px; padding:8px 11px; border-radius:10px; background:#fff; border:1.5px solid #DCD6FB"><option value="">Unassigned</option><sc-for list="{{ headOptions }}" as="h" hint-placeholder-count="6"><option value="{{ h.id }}">{{ h.name }}</option></sc-for></select>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:4px; min-width:150px">
+                    <label style="font-size:10px; font-weight:700; color:#A2A3AE">Parent</label>
+                    <select value="{{ r.eParent }}" onChange="{{ r.setEParent }}" style="box-sizing:border-box; font-size:12px; padding:8px 11px; border-radius:10px; background:#fff; border:1.5px solid #DCD6FB"><option value="">None — top level</option><sc-for list="{{ parentOptions }}" as="p" hint-placeholder-count="6"><option value="{{ p.id }}">{{ p.name }}</option></sc-for></select>
+                  </div>
+                  <button onClick="{{ r.save }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:9px 16px; border-radius:99px; background:#17171C; color:#fff; font-family:inherit; font-size:11.5px; font-weight:800">Save</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        </div>
+      </sc-if>
+
+      <!-- TAB B: CATEGORIES -->
+      <sc-if value="{{ tabCats }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px">
+          <sc-for list="{{ catRows }}" as="c" hint-placeholder-count="6">
+            <div style="background:#fff; border-radius:20px; padding:16px 18px">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px">
+                <sc-if value="{{ c.img }}" hint-placeholder-val="{{ false }}"><span style="{{ c.thumb }}"></span></sc-if>
+                <sc-if value="{{ c.noImg }}" hint-placeholder-val="{{ false }}"><span style="width:38px; height:38px; border-radius:12px; background:#EEEBFE; color:#5F4DEE; display:grid; place-items:center; font-size:13px; font-weight:800">{{ c.abbr }}</span></sc-if>
+                <div style="flex:1">
+                  <div style="font-size:13.5px; font-weight:800">{{ c.name }}</div>
+                  <div style="font-size:10.5px; font-weight:600; color:#A2A3AE">{{ c.count }} assets registered</div>
+                </div>
+              </div>
+              <div style="font-size:9.5px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#A2A3AE; margin-bottom:7px">Category-specific fields</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px">
+                <sc-for list="{{ c.fields }}" as="f" hint-placeholder-count="2">
+                  <span style="display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; background:#F1F1F6; border-radius:99px; padding:4px 10px; color:#3F4046">{{ f.label }} <span style="color:#A2A3AE; font-weight:600">{{ f.type }}</span></span>
+                </sc-for>
+                <sc-if value="{{ c.noFields }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px; font-weight:600; color:#C9C9D6">No extra fields yet</span></sc-if>
+              </div>
+              <div style="display:flex; gap:6px">
+                <input value="{{ c.newField }}" onChange="{{ c.setNewField }}" placeholder="Add field, e.g. Warranty months" style="all:unset; box-sizing:border-box; flex:1; font-family:inherit; font-size:11px; font-weight:600; padding:8px 11px; border-radius:99px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+                <button onClick="{{ c.addField }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:8px 13px; border-radius:99px; background:#17171C; color:#fff; font-family:inherit; font-size:11px; font-weight:800" style-hover="background:#5F4DEE">+ Add</button>
+              </div>
+            </div>
+          </sc-for>
+          <div style="border:1.5px dashed #C9C9D6; border-radius:20px; padding:16px 18px; display:flex; flex-direction:column; justify-content:center; gap:10px; min-height:150px">
+            <div style="font-size:12.5px; font-weight:800; color:#6B6C75">New category</div>
+            <input value="{{ ncName }}" onChange="{{ setNcName }}" placeholder="e.g. Lab Equipment" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12px; font-weight:600; padding:10px 12px; border-radius:11px; background:#fff; border:1.5px solid #EBEBF1">
+            <button onClick="{{ addCat }}" style="all:unset; box-sizing:border-box; cursor:pointer; text-align:center; padding:10px; border-radius:99px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12px; font-weight:800" style-hover="background:#4A39C9">+ Create category</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- TAB C: DIRECTORY -->
+      <sc-if value="{{ tabDir }}" hint-placeholder-val="{{ false }}">
+        <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap">
+          <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px; width:220px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+            <input value="{{ dirQ }}" onChange="{{ setDirQ }}" placeholder="Search name or email…" style="all:unset; flex:1; font-family:inherit; font-size:11.5px; font-weight:600; color:#17171C">
+          </div>
+          <label style="display:flex; align-items:center; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px">
+            <select value="{{ dirDept }}" onChange="{{ setDirDept }}"><option value="">All departments</option><sc-for list="{{ parentOptions }}" as="p" hint-placeholder-count="6"><option value="{{ p.id }}">{{ p.name }}</option></sc-for></select>
+          </label>
+          <span style="margin-left:auto; font-size:11px; font-weight:600; color:#A2A3AE">Role changes here are the only way to promote Employees.</span>
+        </div>
+        <sc-if value="{{ hasDirRows }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#fff; border-radius:22px; overflow:hidden">
+            <div style="display:grid; grid-template-columns:1.5fr 1.6fr 1fr 170px 110px; gap:10px; padding:12px 18px; border-bottom:1px solid #F1F1F5; font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#A2A3AE">
+              <span>Employee</span><span>Email</span><span>Department</span><span>Role</span><span>Status</span>
+            </div>
+            <sc-for list="{{ dirRows }}" as="e" hint-placeholder-count="10">
+              <div style="display:grid; grid-template-columns:1.5fr 1.6fr 1fr 170px 110px; gap:10px; align-items:center; padding:9px 18px; border-bottom:1px solid #F6F6F9; opacity:{{ e.opacity }}">
+                <span style="display:flex; align-items:center; gap:9px">
+                  <span style="width:30px; height:30px; border-radius:99px; background:{{ e.avBg }}; color:{{ e.avInk }}; display:grid; place-items:center; font-size:10px; font-weight:700; flex:none">{{ e.init }}</span>
+                  <span style="font-size:12.5px; font-weight:700">{{ e.name }}</span>
+                </span>
+                <span style="font-size:11.5px; font-weight:600; color:#6B6C75">{{ e.email }}</span>
+                <span style="font-size:11.5px; font-weight:600; color:#3F4046">{{ e.dept }}</span>
+                <span>
+                  <sc-if value="{{ e.isAdmin }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; font-weight:700; border-radius:99px; padding:4px 10px; background:#17171C; color:#fff">Admin</span></sc-if>
+                  <sc-if value="{{ e.notAdmin }}" hint-placeholder-val="{{ true }}">
+                    <label style="display:inline-flex; align-items:center; background:#F7F7FA; border:1.5px solid {{ e.roleBorder }}; border-radius:99px; padding:5px 10px">
+                      <select value="{{ e.role }}" onChange="{{ e.setRole }}" style="font-size:10.5px; font-weight:700"><option>Employee</option><option>Department Head</option><option>Asset Manager</option></select>
+                    </label>
+                  </sc-if>
+                </span>
+                <span><button onClick="{{ e.toggle }}" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:10px; font-weight:700; border-radius:99px; padding:4px 10px; background:{{ e.stBg }}; color:{{ e.stInk }}">{{ e.st }}</button></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noDirRows }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff; border-radius:22px; padding:48px 20px; text-align:center">
+            <div style="font-size:14px; font-weight:800">Nobody matches that search</div>
+            <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:4px">Check the spelling or clear the department filter.</div>
+          </div>
+        </sc-if>
+        </div>
+      </sc-if>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'depts', toast: null, ndName: '', ndHead: '', ndParent: '', ncName: '', dirQ: '', dirDept: '', editingId: null, eName: '', eHead: '', eParent: '', newFields: {}, depts: null, cats: null, emps: null };
+  componentDidMount() {
+    const AF = window.AF; if (!AF) return;
+    this.setState({
+      depts: AF.departments.map(d => ({ ...d })),
+      cats: AF.categories.map(c => ({ ...c, fields: c.fields.slice() })),
+      emps: AF.employees.map(e => ({ ...e })),
+    });
+  }
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  flash(msg) { this.setState({ toast: msg }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: null }), 3500); }
+  renderVals() {
+    const AF = window.AF; if (!AF) return {};
+    const s = this.state, role = AF.role();
+    if (role !== 'Admin') return { locked: true, open: false, roleName: role };
+    if (!s.depts) return { locked: false, open: false };
+
+    const tabs = [['depts', 'Departments'], ['cats', 'Asset Categories'], ['dir', 'Employee Directory']].map(t => ({
+      label: t[1], color: s.tab === t[0] ? '#fff' : '#9A9AA5', bg: s.tab === t[0] ? '#5F4DEE' : 'transparent',
+      pick: () => this.setState({ tab: t[0] }),
+    }));
+
+    const headOptions = s.emps.filter(e => e.active && (e.role === 'Department Head' || e.role === 'Asset Manager' || e.role === 'Admin')).map(e => ({ id: e.id, name: e.name }));
+    const parentOptions = s.depts.filter(d => d.active).map(d => ({ id: d.id, name: d.name }));
+
+    const ordered = [];
+    s.depts.filter(d => !d.parent).forEach(p => { ordered.push(p); s.depts.filter(c => c.parent === p.id).forEach(c => ordered.push(c)); });
+    const deptRows = ordered.map(d => {
+      const editing = s.editingId === d.id;
+      return {
+        name: d.name, isChild: !!d.parent,
+        head: d.head ? AF.empName(d.head) : 'Unassigned', headColor: d.head ? '#3F4046' : '#E14B3B',
+        parent: d.parent ? (s.depts.find(x => x.id === d.parent) || {}).name : '—',
+        people: s.emps.filter(e => e.dept === d.id && e.active).length,
+        st: d.active ? 'Active' : 'Inactive', stBg: d.active ? '#E5F6EF' : '#F1F1F6', stInk: d.active ? '#157A57' : '#8A8B95',
+        opacity: d.active ? 1 : 0.55,
+        editLabel: editing ? 'Close' : 'Edit', editing,
+        edit: () => this.setState(editing ? { editingId: null } : { editingId: d.id, eName: d.name, eHead: d.head || '', eParent: d.parent || '' }),
+        tgLabel: d.active ? 'Deactivate' : 'Reactivate', tgColor: d.active ? '#E14B3B' : '#157A57',
+        toggle: () => { d.active = !d.active; this.forceUpdate(); this.flash(d.name + (d.active ? ' reactivated.' : ' deactivated — its assets stay registered.')); },
+        eName: s.eName, setEName: this.set('eName'), eHead: s.eHead, setEHead: this.set('eHead'), eParent: s.eParent, setEParent: this.set('eParent'),
+        save: () => { d.name = s.eName || d.name; d.head = s.eHead || null; d.parent = s.eParent || null; this.setState({ editingId: null }); this.flash(d.name + ' updated.'); },
+      };
+    });
+
+    const catRows = s.cats.map(c => ({
+      name: c.name, img: c.img || false, noImg: !c.img, abbr: c.name.slice(0, 2).toUpperCase(),
+      thumb: c.img ? { display: 'block', width: 38, height: 38, borderRadius: 12, flex: 'none', background: '#F1F1F6 url(' + c.img + ') center/cover no-repeat' } : false,
+      count: window.AF.assets.filter(a => a.cat === c.id).length,
+      fields: c.fields.map(f => ({ label: f.label, type: f.type })),
+      noFields: c.fields.length === 0,
+      newField: s.newFields[c.id] || '',
+      setNewField: e => this.setState({ newFields: { ...s.newFields, [c.id]: e.target.value } }),
+      addField: () => {
+        const v = (s.newFields[c.id] || '').trim(); if (!v) return;
+        c.fields.push({ key: v.toLowerCase().replace(/\W+/g, ''), label: v, type: /month|year|km|count|capacity|number/i.test(v) ? 'number' : 'text' });
+        this.setState({ newFields: { ...s.newFields, [c.id]: '' } }); this.flash('Field “' + v + '” added to ' + c.name + '.');
+      },
+    }));
+
+    const q = s.dirQ.trim().toLowerCase();
+    const dirPool = s.emps.filter(e => (!q || e.name.toLowerCase().indexOf(q) >= 0 || e.email.toLowerCase().indexOf(q) >= 0) && (!s.dirDept || e.dept === s.dirDept));
+    const dirRows = dirPool.map(e => ({
+      name: e.name, email: e.email, dept: AF.deptName(e.dept),
+      init: AF.initials(e.name), avBg: AF.avatarBg(e.id), avInk: AF.avatarInk(e.id),
+      isAdmin: e.role === 'Admin', notAdmin: e.role !== 'Admin',
+      role: e.role, roleBorder: e.role === 'Employee' ? '#EBEBF1' : '#B8AEF7',
+      setRole: ev => { const old = e.role; e.role = ev.target.value; this.forceUpdate(); this.flash(e.name + ': ' + old + ' → ' + e.role + '.'); },
+      st: e.active ? 'Active' : 'Inactive', stBg: e.active ? '#E5F6EF' : '#F1F1F6', stInk: e.active ? '#157A57' : '#8A8B95',
+      opacity: e.active ? 1 : 0.55,
+      toggle: () => { e.active = !e.active; this.forceUpdate(); this.flash(e.name + (e.active ? ' reactivated.' : ' marked inactive.')); },
+    }));
+
+    return {
+      locked: false, open: true, roleName: role, tabs, toast: s.toast || false,
+      tabDepts: s.tab === 'depts', tabCats: s.tab === 'cats', tabDir: s.tab === 'dir',
+      headOptions, parentOptions, deptRows,
+      ndName: s.ndName, setNdName: this.set('ndName'), ndHead: s.ndHead, setNdHead: this.set('ndHead'), ndParent: s.ndParent, setNdParent: this.set('ndParent'),
+      addDept: () => {
+        const v = s.ndName.trim(); if (!v) { this.flash('Give the department a name first.'); return; }
+        s.depts.push({ id: v.toLowerCase().replace(/\W+/g, '').slice(0, 8), name: v, head: s.ndHead || null, parent: s.ndParent || null, active: true });
+        this.setState({ ndName: '', ndHead: '', ndParent: '' }); this.flash(v + ' created.');
+      },
+      catRows, ncName: s.ncName, setNcName: this.set('ncName'),
+      addCat: () => {
+        const v = s.ncName.trim(); if (!v) { this.flash('Name the category first.'); return; }
+        s.cats.push({ id: v.toLowerCase().replace(/\W+/g, '').slice(0, 8), name: v, img: null, fields: [] });
+        this.setState({ ncName: '' }); this.flash('Category “' + v + '” created — add its custom fields below.');
+      },
+      dirQ: s.dirQ, setDirQ: this.set('dirQ'), dirDept: s.dirDept, setDirDept: this.set('dirDept'),
+      dirRows, hasDirRows: dirRows.length > 0, noDirRows: dirRows.length === 0,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

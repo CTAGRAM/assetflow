@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder{color:#A2A3AE} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:11.5px; font-weight:600; color:#3F4046; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Asset Registry">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="assets" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Asset Registry</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">{{ countLine }}</div>
+      </div>
+      <button onClick="{{ toggleForm }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:8px; padding:11px 18px; border-radius:99px; background:{{ regBg }}; color:{{ regInk }}; font-family:inherit; font-size:12.5px; font-weight:700; box-shadow:0 6px 14px rgba(95,77,238,0.25); border:1.5px solid {{ regBorder }}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="{{ regIcon }}"></path></svg>{{ regLabel }}</button>
+    </div>
+
+    <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff; border-radius:22px; padding:20px 22px; margin-bottom:18px; border:1.5px solid #DCD6FB">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px">
+          <span style="width:30px; height:30px; border-radius:10px; background:#EEEBFE; display:grid; place-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5F4DEE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path></svg></span>
+          <span style="font-size:14.5px; font-weight:800">Register a new asset</span>
+          <span style="font-size:10.5px; font-weight:700; font-family:'IBM Plex Mono',monospace; background:#17171C; color:#fff; border-radius:99px; padding:4px 10px; margin-left:auto">Tag: {{ nextTag }} · auto</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:12px">
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Asset name *</label>
+            <input value="{{ fName }}" onChange="{{ setFName }}" placeholder='e.g. MacBook Pro 16"' style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid {{ fNameBorder }}">
+            <sc-if value="{{ fNameError }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; font-weight:600; color:#E14B3B">{{ fNameError }}</span></sc-if>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Category *</label>
+            <select value="{{ fCat }}" onChange="{{ setFCat }}" style="box-sizing:border-box; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+              <sc-for list="{{ catOptions }}" as="c" hint-placeholder-count="6"><option value="{{ c.id }}">{{ c.name }}</option></sc-for>
+            </select>
+            <span style="font-size:10px; font-weight:600; color:#A2A3AE">{{ fCatFields }}</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Serial number</label>
+            <input value="{{ fSerial }}" onChange="{{ setFSerial }}" placeholder="Manufacturer serial" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Acquisition date</label>
+            <input type="date" value="{{ fDate }}" onChange="{{ setFDate }}" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Cost (USD) *</label>
+            <input value="{{ fCost }}" onChange="{{ setFCost }}" placeholder="0.00" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid {{ fCostBorder }}">
+            <sc-if value="{{ fCostError }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; font-weight:600; color:#E14B3B">{{ fCostError }}</span></sc-if>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Condition</label>
+            <select value="{{ fCond }}" onChange="{{ setFCond }}" style="box-sizing:border-box; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+              <option>Good</option><option>Fair</option><option>Poor</option><option>Damaged</option>
+            </select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Location</label>
+            <input value="{{ fLoc }}" onChange="{{ setFLoc }}" placeholder="e.g. HQ · Floor 2" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:10px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Photo</label>
+            <button style="all:unset; box-sizing:border-box; cursor:pointer; font-size:11px; font-weight:700; color:#6B6C75; padding:10px 12px; border-radius:11px; border:1.5px dashed #C9C9D6; text-align:center" style-hover="border-color:#5F4DEE; color:#5F4DEE">⇪ Upload image</button>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap">
+          <button onClick="{{ toggleBookable }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:9px">
+            <span style="width:34px; height:20px; border-radius:99px; background:{{ bkBg }}; position:relative; transition:background 0.15s"><span style="position:absolute; top:2px; left:{{ bkLeft }}; width:16px; height:16px; border-radius:99px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.25); transition:left 0.15s"></span></span>
+            <span style="font-size:11.5px; font-weight:700; color:#3F4046">Shared / bookable resource</span>
+          </button>
+          <div style="margin-left:auto; display:flex; gap:8px">
+            <button onClick="{{ toggleForm }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:10px 16px; border-radius:99px; border:1px solid #E7E7EE; background:#fff; font-family:inherit; font-size:12px; font-weight:700; color:#6B6C75" style-hover="border-color:#17171C; color:#17171C">Cancel</button>
+            <button onClick="{{ submitForm }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:10px 18px; border-radius:99px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12px; font-weight:800; box-shadow:0 6px 14px rgba(95,77,238,0.35)" style-hover="background:#4A39C9">Register {{ nextTag }}</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ justAdded }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; gap:9px; background:#E5F6EF; border:1px solid #BFE8D6; border-radius:14px; padding:11px 16px; margin-bottom:16px; font-size:12px; font-weight:700; color:#157A57">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+        {{ justAdded }} registered and set to Available.
+      </div>
+    </sc-if>
+
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap">
+      <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px; width:220px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+        <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Search tag, serial, name…" style="all:unset; flex:1; font-family:inherit; font-size:11.5px; font-weight:600; color:#17171C">
+      </div>
+      <label style="display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px">
+        <select value="{{ fltCat }}" onChange="{{ setFltCat }}"><option value="">All categories</option><sc-for list="{{ catOptions }}" as="c" hint-placeholder-count="6"><option value="{{ c.id }}">{{ c.name }}</option></sc-for></select>
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px">
+        <select value="{{ fltStatus }}" onChange="{{ setFltStatus }}"><option value="">All statuses</option><option>Available</option><option>Allocated</option><option>Reserved</option><option>Under Maintenance</option><option>Lost</option><option>Retired</option><option>Disposed</option></select>
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px">
+        <select value="{{ fltDept }}" onChange="{{ setFltDept }}"><option value="">All departments</option><sc-for list="{{ deptOptions }}" as="d" hint-placeholder-count="6"><option value="{{ d.id }}">{{ d.name }}</option></sc-for></select>
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #E7E7EE; border-radius:99px; padding:9px 14px">
+        <select value="{{ fltLoc }}" onChange="{{ setFltLoc }}"><option value="">All locations</option><sc-for list="{{ locOptions }}" as="l" hint-placeholder-count="5"><option value="{{ l.v }}">{{ l.v }}</option></sc-for></select>
+      </label>
+      <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ clearFilters }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:7px; background:#17171C; color:#fff; border-radius:99px; padding:9px 14px; font-family:inherit; font-size:11.5px; font-weight:700">Clear <span style="background:#fff; color:#17171C; border-radius:99px; width:17px; height:17px; display:grid; place-items:center; font-size:10px">{{ filterCount }}</span></button>
+      </sc-if>
+      <span style="margin-left:auto; font-size:11.5px; font-weight:700; color:#A2A3AE">{{ resultLine }}</span>
+    </div>
+
+    <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#17171C; border-radius:26px; padding:16px; margin-bottom:18px">
+        <div style="border-radius:20px; background:linear-gradient(155deg,#7168F0,#4E3BD8); padding:20px 22px; color:#fff">
+          <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:16px; flex-wrap:wrap">
+            <sc-if value="{{ d.img }}" hint-placeholder-val="{{ false }}"><span style="{{ d.thumb }}"></span></sc-if>
+            <div style="flex:1; min-width:180px">
+              <div style="font-size:10.5px; font-weight:600; color:rgba(255,255,255,0.65)">Asset details</div>
+              <div style="display:flex; align-items:center; gap:9px; margin-top:4px; flex-wrap:wrap">
+                <span style="font-size:19px; font-weight:800; font-family:'IBM Plex Mono',monospace"># {{ d.tag }}</span>
+                <span style="font-size:9.5px; font-weight:700; background:rgba(255,255,255,0.22); border-radius:99px; padding:3px 9px">{{ d.status }}</span>
+                <sc-if value="{{ d.bookable }}" hint-placeholder-val="{{ false }}"><span style="font-size:9.5px; font-weight:700; background:#17171C; border-radius:99px; padding:3px 9px">Bookable</span></sc-if>
+              </div>
+              <div style="font-size:13px; font-weight:700; margin-top:3px">{{ d.name }} · <span style="font-weight:500; color:rgba(255,255,255,0.75)">{{ d.cat }}</span></div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(3, auto); gap:8px 22px; font-size:11px">
+              <div><div style="color:rgba(255,255,255,0.6); font-size:9.5px; font-weight:600">Serial</div><div style="font-weight:700; margin-top:2px; font-family:'IBM Plex Mono',monospace">{{ d.serial }}</div></div>
+              <div><div style="color:rgba(255,255,255,0.6); font-size:9.5px; font-weight:600">Acquired</div><div style="font-weight:700; margin-top:2px">{{ d.acq }} · {{ d.cost }}</div></div>
+              <div><div style="color:rgba(255,255,255,0.6); font-size:9.5px; font-weight:600">Location</div><div style="font-weight:700; margin-top:2px">{{ d.loc }}</div></div>
+              <div><div style="color:rgba(255,255,255,0.6); font-size:9.5px; font-weight:600">Condition</div><div style="font-weight:700; margin-top:2px">{{ d.cond }}</div></div>
+              <div><div style="color:rgba(255,255,255,0.6); font-size:9.5px; font-weight:600">Department</div><div style="font-weight:700; margin-top:2px">{{ d.dept }}</div></div>
+              <div><div style="color:rgba(255,255,255,0.6); font-size:9.5px; font-weight:600">Holder</div><div style="font-weight:700; margin-top:2px">{{ d.holder }}</div></div>
+            </div>
+            <button onClick="{{ closeSel }}" style="all:unset; cursor:pointer; width:30px; height:30px; border-radius:99px; background:rgba(255,255,255,0.16); display:grid; place-items:center" style-hover="background:rgba(255,255,255,0.3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+            <div style="background:rgba(255,255,255,0.13); border-radius:14px; padding:13px 15px">
+              <div style="font-size:10.5px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:rgba(255,255,255,0.7); margin-bottom:9px">Allocation history</div>
+              <sc-if value="{{ d.hasAlloc }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:7px">
+                  <sc-for list="{{ d.allocHist }}" as="h" hint-placeholder-count="2">
+                    <div style="display:flex; align-items:center; gap:8px; font-size:11px">
+                      <span style="width:6px; height:6px; border-radius:99px; background:{{ h.dot }}; flex:none"></span>
+                      <span style="font-weight:700">{{ h.who }}</span>
+                      <span style="color:rgba(255,255,255,0.65)">{{ h.range }}</span>
+                      <span style="margin-left:auto; font-size:9.5px; font-weight:700; background:rgba(255,255,255,0.18); border-radius:99px; padding:2px 8px">{{ h.st }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ d.noAlloc }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px; color:rgba(255,255,255,0.65)">Never allocated.</div></sc-if>
+            </div>
+            <div style="background:rgba(255,255,255,0.13); border-radius:14px; padding:13px 15px">
+              <div style="font-size:10.5px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:rgba(255,255,255,0.7); margin-bottom:9px">Maintenance history</div>
+              <sc-if value="{{ d.hasMaint }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:7px">
+                  <sc-for list="{{ d.maintHist }}" as="m" hint-placeholder-count="2">
+                    <div style="display:flex; align-items:center; gap:8px; font-size:11px">
+                      <span style="font-weight:700; font-family:'IBM Plex Mono',monospace">{{ m.id }}</span>
+                      <span style="color:rgba(255,255,255,0.75); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ m.issue }}</span>
+                      <span style="font-size:9.5px; font-weight:700; background:rgba(255,255,255,0.18); border-radius:99px; padding:2px 8px">{{ m.stage }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ d.noMaint }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px; color:rgba(255,255,255,0.65)">No maintenance recorded.</div></sc-if>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#fff; border-radius:22px; overflow:hidden">
+        <div style="display:grid; grid-template-columns:56px 110px 1.6fr 1fr 1fr 1fr 130px; gap:10px; align-items:center; padding:12px 18px; border-bottom:1px solid #F1F1F5; font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#A2A3AE">
+          <span></span><span>Tag</span><span>Asset</span><span>Department</span><span>Location</span><span>Holder</span><span>Status</span>
+        </div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+          <button onClick="{{ r.pick }}" style="all:unset; box-sizing:border-box; cursor:pointer; width:100%; display:grid; grid-template-columns:56px 110px 1.6fr 1fr 1fr 1fr 130px; gap:10px; align-items:center; padding:9px 18px; border-bottom:1px solid #F6F6F9; background:{{ r.bg }}" style-hover="background:#F7F7FC">
+            <sc-if value="{{ r.img }}" hint-placeholder-val="{{ false }}"><span style="{{ r.thumb }}"></span></sc-if>
+            <sc-if value="{{ r.noImg }}" hint-placeholder-val="{{ false }}"><span style="width:36px; height:36px; border-radius:11px; background:#F1F1F6; color:#A2A3AE; display:grid; place-items:center; font-size:10px; font-weight:800">{{ r.abbr }}</span></sc-if>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:700; color:#5F4DEE">{{ r.tag }}</span>
+            <span style="min-width:0"><span style="display:block; font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:10.5px; color:#A2A3AE; font-weight:600">{{ r.cat }} · {{ r.serial }}</span></span>
+            <span style="font-size:11.5px; font-weight:600; color:#3F4046">{{ r.dept }}</span>
+            <span style="font-size:11.5px; font-weight:600; color:#3F4046">{{ r.loc }}</span>
+            <span style="font-size:11.5px; font-weight:600; color:#3F4046">{{ r.holder }}</span>
+            <span><span style="font-size:10px; font-weight:700; border-radius:99px; padding:4px 10px; background:{{ r.stBg }}; color:{{ r.stInk }}">{{ r.status }}</span></span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff; border-radius:22px; padding:52px 20px; text-align:center">
+        <div style="width:52px; height:52px; border-radius:99px; background:#F1F1F6; display:grid; place-items:center; margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg></div>
+        <div style="font-size:14px; font-weight:800">No assets match these filters</div>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:4px; margin-bottom:16px">Try a broader search, or clear the filters to see all {{ totalCount }} assets.</div>
+        <button onClick="{{ clearFilters }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:10px 18px; border-radius:99px; background:#17171C; color:#fff; font-family:inherit; font-size:12px; font-weight:700">Clear all filters</button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { q: '', fltCat: '', fltStatus: '', fltDept: '', fltLoc: '', sel: null, formOpen: false, submitted: false, justAdded: null, added: [],
+    fName: '', fCat: 'laptops', fSerial: '', fDate: '2026-07-12', fCost: '', fCond: 'Good', fLoc: '', fBookable: false };
+  componentDidMount() { if (location.hash === '#register') this.setState({ formOpen: true }); }
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  renderVals() {
+    const AF = window.AF; if (!AF) return {};
+    const s = this.state;
+    const all = AF.assets.concat(s.added);
+    const nextTag = 'AF-' + String(41 + s.added.length).padStart(4, '0');
+
+    const q = s.q.trim().toLowerCase();
+    let pool = all.filter(a =>
+      (!q || a.tag.toLowerCase().indexOf(q) >= 0 || a.name.toLowerCase().indexOf(q) >= 0 || (a.serial || '').toLowerCase().indexOf(q) >= 0) &&
+      (!s.fltCat || a.cat === s.fltCat) && (!s.fltStatus || a.status === s.fltStatus) &&
+      (!s.fltDept || a.dept === s.fltDept) && (!s.fltLoc || a.loc === s.fltLoc));
+
+    const soft = { Available: ['#E5F6EF', '#157A57'], Allocated: ['#E9EFFC', '#2456C4'], Reserved: ['#EFEAF9', '#6D4FC2'], 'Under Maintenance': ['#FBF1E0', '#A65B04'], Lost: ['#FDECEA', '#C0331F'], Retired: ['#F1F1F6', '#6B6C75'], Disposed: ['#F1F1F6', '#8A8B95'] };
+    const rows = pool.map(a => ({
+      tag: a.tag, name: a.name, serial: a.serial || '—',
+      cat: (AF.categories.find(c => c.id === a.cat) || {}).name || a.cat,
+      dept: AF.deptName(a.dept), loc: a.loc,
+      holder: a.holder ? (a.holderType === 'department' ? AF.deptName(a.holder) + ' (dept)' : AF.empName(a.holder)) : '—',
+      status: a.status, stBg: (soft[a.status] || soft.Retired)[0], stInk: (soft[a.status] || soft.Retired)[1],
+      img: a.img || false, noImg: !a.img, abbr: a.name.slice(0, 2).toUpperCase(),
+      thumb: a.img ? { display: 'block', width: 36, height: 36, borderRadius: 11, flex: 'none', background: '#F1F1F6 url(' + a.img + ') center/cover no-repeat' } : false,
+      bg: s.sel === a.tag ? '#F3F1FE' : 'transparent',
+      pick: () => { this.setState({ sel: s.sel === a.tag ? null : a.tag }); window.scrollTo({ top: 0, behavior: 'smooth' }); },
+    }));
+
+    // detail
+    const selA = all.find(a => a.tag === s.sel);
+    let d = {};
+    if (selA) {
+      const allocHist = AF.allocations.filter(x => x.asset === selA.tag).map(h => ({
+        who: h.toType === 'department' ? AF.deptName(h.to) + ' (dept)' : AF.empName(h.to),
+        range: AF.fmtDate(h.date) + ' → ' + (h.returned ? AF.fmtDate(h.returned) : h.expReturn ? 'due ' + AF.fmtDate(h.expReturn) : 'open-ended'),
+        st: h.status, dot: h.status === 'Active' ? '#8EF0C6' : 'rgba(255,255,255,0.45)',
+      }));
+      const maintHist = AF.maintenance.filter(m => m.asset === selA.tag).map(m => ({ id: m.id, issue: m.issue, stage: m.stage }));
+      d = {
+        tag: selA.tag, name: selA.name, cat: (AF.categories.find(c => c.id === selA.cat) || {}).name,
+        status: selA.status, bookable: !!selA.bookable, img: selA.img || false,
+        thumb: { display: 'block', width: 64, height: 64, borderRadius: 16, flex: 'none', border: '2px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.2) url(' + selA.img + ') center/cover no-repeat' },
+        serial: selA.serial || '—', acq: AF.fmtDate(selA.acq), cost: AF.money(selA.cost),
+        loc: selA.loc, cond: selA.cond, dept: AF.deptName(selA.dept),
+        holder: selA.holder ? (selA.holderType === 'department' ? AF.deptName(selA.holder) : AF.empName(selA.holder)) : '—',
+        allocHist, hasAlloc: allocHist.length > 0, noAlloc: allocHist.length === 0,
+        maintHist, hasMaint: maintHist.length > 0, noMaint: maintHist.length === 0,
+      };
+    }
+
+    const filterCount = [s.fltCat, s.fltStatus, s.fltDept, s.fltLoc, q].filter(Boolean).length;
+    const locOptions = Array.from(new Set(all.map(a => a.loc))).sort().map(v => ({ v }));
+
+    const nameOk = s.fName.trim().length >= 2, costOk = s.fCost === '' ? false : !isNaN(parseFloat(s.fCost));
+    const fCatObj = AF.categories.find(c => c.id === s.fCat);
+
+    return {
+      countLine: all.length + ' assets across ' + AF.departments.filter(x => x.active).length + ' departments — search, filter, and open any asset for its full history.',
+      formOpen: s.formOpen,
+      regLabel: s.formOpen ? 'Close form' : 'Register an asset',
+      regIcon: s.formOpen ? 'M18 6L6 18M6 6l12 12' : 'M12 5v14M5 12h14',
+      regBg: s.formOpen ? '#fff' : '#5F4DEE', regInk: s.formOpen ? '#17171C' : '#fff', regBorder: s.formOpen ? '#E7E7EE' : '#5F4DEE',
+      toggleForm: () => this.setState({ formOpen: !s.formOpen, submitted: false }),
+      nextTag,
+      catOptions: AF.categories.map(c => ({ id: c.id, name: c.name })),
+      deptOptions: AF.departments.filter(x => x.active).map(x => ({ id: x.id, name: x.name })),
+      locOptions,
+      fName: s.fName, setFName: this.set('fName'), fCat: s.fCat, setFCat: this.set('fCat'),
+      fSerial: s.fSerial, setFSerial: this.set('fSerial'), fDate: s.fDate, setFDate: this.set('fDate'),
+      fCost: s.fCost, setFCost: this.set('fCost'), fCond: s.fCond, setFCond: this.set('fCond'),
+      fLoc: s.fLoc, setFLoc: this.set('fLoc'),
+      fCatFields: fCatObj && fCatObj.fields.length ? 'Extra fields: ' + fCatObj.fields.map(f => f.label).join(', ') : 'No extra fields',
+      fNameError: s.submitted && !nameOk ? 'Give the asset a name (min 2 characters).' : false,
+      fCostError: s.submitted && !costOk ? 'Enter a numeric cost, e.g. 1499.' : false,
+      fNameBorder: s.submitted && !nameOk ? '#E14B3B' : '#EBEBF1',
+      fCostBorder: s.submitted && !costOk ? '#E14B3B' : '#EBEBF1',
+      bkBg: s.fBookable ? '#5F4DEE' : '#D9D9E3', bkLeft: s.fBookable ? '16px' : '2px',
+      toggleBookable: () => this.setState({ fBookable: !s.fBookable }),
+      submitForm: () => {
+        if (!nameOk || !costOk) { this.setState({ submitted: true }); return; }
+        const asset = { tag: nextTag, name: s.fName.trim(), cat: s.fCat, serial: s.fSerial || '—', acq: s.fDate, cost: parseFloat(s.fCost), cond: s.fCond, loc: s.fLoc || 'HQ · Unassigned', dept: 'ops', status: 'Available', bookable: s.fBookable, img: (fCatObj || {}).img || null, holder: null, extra: {} };
+        this.setState({ added: s.added.concat([asset]), justAdded: nextTag + ' · ' + s.fName.trim(), formOpen: false, submitted: false, fName: '', fSerial: '', fCost: '', fLoc: '', fBookable: false });
+      },
+      justAdded: s.justAdded || false,
+      q: s.q, setQ: this.set('q'),
+      fltCat: s.fltCat, setFltCat: this.set('fltCat'), fltStatus: s.fltStatus, setFltStatus: this.set('fltStatus'),
+      fltDept: s.fltDept, setFltDept: this.set('fltDept'), fltLoc: s.fltLoc, setFltLoc: this.set('fltLoc'),
+      hasFilters: filterCount > 0, filterCount,
+      clearFilters: () => this.setState({ q: '', fltCat: '', fltStatus: '', fltDept: '', fltLoc: '' }),
+      resultLine: rows.length + ' of ' + all.length + ' assets',
+      rows, hasRows: rows.length > 0, noRows: rows.length === 0, totalCount: all.length,
+      hasSel: !!selA, d, closeSel: () => this.setState({ sel: null }),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

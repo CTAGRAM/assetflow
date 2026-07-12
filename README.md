@@ -60,6 +60,7 @@ psql -d assetflow -f server/db/schema.sql
 cd server
 cp .env.example .env   # adjust DATABASE_URL if needed
 npm install
+npm run create-admin -- "Your Name" admin@company.com yourpassword
 npm run dev            # http://localhost:3000/api/health
 
 # frontend

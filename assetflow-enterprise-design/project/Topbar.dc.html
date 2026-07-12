@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0} a{color:#5F4DEE} a:hover{color:#4A39C9}</style>
+</helmet>
+<div style="display:flex; align-items:center; gap:12px; background:#fff; padding:12px 20px; border-bottom:1px solid #EEEEF3; flex-wrap:wrap; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C">
+  <a href="Dashboard.dc.html" style="display:flex; align-items:center; gap:9px; text-decoration:none; color:inherit">
+    <div style="width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,#7B6CF6,#4A39C9); display:grid; place-items:center; color:#fff; font-weight:800; font-size:14px">AF</div>
+    <div style="display:flex; flex-direction:column">
+      <span style="font-weight:800; font-size:14.5px; letter-spacing:0.3px">ASSETFLOW</span>
+      <span style="font-size:9.5px; color:#A2A3AE; font-weight:500">Track assets. Better operations.</span>
+    </div>
+  </a>
+  <span style="font-size:12px; font-weight:700; border:1px solid #E7E7EE; border-radius:99px; padding:6px 12px; background:#fff">{{ totalAssets }}</span>
+  <nav style="display:flex; align-items:center; gap:2px; background:#17171C; border-radius:99px; padding:4px; flex-wrap:wrap">
+    <sc-for list="{{ nav }}" as="it" hint-placeholder-count="7">
+      <a href="{{ it.href }}" style="display:flex; align-items:center; gap:6px; padding:7px 13px; border-radius:99px; text-decoration:none; font-size:12px; font-weight:600; color:{{ it.color }}; background:{{ it.bg }}" style-hover="color:#fff">
+        <sc-if value="{{ it.on }}" hint-placeholder-val="{{ false }}"><span style="width:5px; height:5px; border-radius:99px; background:#fff"></span></sc-if>
+        {{ it.label }}</a>
+    </sc-for>
+  </nav>
+  <div style="margin-left:auto; display:flex; align-items:center; gap:8px">
+    <label style="display:flex; align-items:center; gap:7px; border:1px solid #E7E7EE; border-radius:99px; padding:0 6px 0 12px; background:#fff; height:34px">
+      <span style="font-size:9px; font-weight:800; letter-spacing:0.6px; color:#A2A3AE; text-transform:uppercase">View as</span>
+      <select value="{{ role }}" onChange="{{ pickRole }}" style="border:none; outline:none; background:transparent; font-family:inherit; font-size:11.5px; font-weight:700; color:#5F4DEE; cursor:pointer; -webkit-appearance:none; appearance:none; padding-right:2px">
+        <option value="Admin">Admin</option>
+        <option value="Asset Manager">Asset Manager</option>
+        <option value="Department Head">Dept Head</option>
+        <option value="Employee">Employee</option>
+      </select>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5F4DEE" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><path d="M6 9l6 6 6-6"></path></svg>
+    </label>
+    <span style="width:1px; height:22px; background:#E7E7EE"></span>
+    <a href="Notifications.dc.html" style="position:relative; width:34px; height:34px; border-radius:10px; display:grid; place-items:center; text-decoration:none" style-hover="background:#F1F1F6">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3F4046" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"></path></svg>
+      <sc-if value="{{ unread }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; top:5px; right:6px; width:7px; height:7px; border-radius:99px; background:#E14B3B; border:1.5px solid #fff"></span></sc-if>
+    </a>
+    <a href="Organization.dc.html" title="Organization settings" style="width:34px; height:34px; border-radius:10px; display:grid; place-items:center; text-decoration:none" style-hover="background:#F1F1F6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3F4046" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.09a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.09a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.09a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"></path></svg></a>
+    <a href="Login.dc.html" title="{{ meTitle }}" style="width:34px; height:34px; border-radius:11px; background:{{ avBg }}; color:{{ avInk }}; display:grid; place-items:center; font-size:11px; font-weight:700; text-decoration:none">{{ meInitials }}</a>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1240, &quot;height&quot;: 64}, &quot;active&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;dashboard&quot;, &quot;tsType&quot;: &quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const AF = window.AF; if (!AF) return { nav: [] };
+    const role = AF.role(), me = AF.me(), active = this.props.active || 'dashboard';
+    const items = [
+      { id: 'dashboard', label: 'Overview', href: 'Dashboard.dc.html', roles: null },
+      { id: 'org', label: 'Organization', href: 'Organization.dc.html', roles: ['Admin'] },
+      { id: 'assets', label: 'Assets', href: 'Assets.dc.html', roles: null },
+      { id: 'allocation', label: 'Allocation', href: 'Allocation.dc.html', roles: null },
+      { id: 'booking', label: 'Booking', href: 'Booking.dc.html', roles: null },
+      { id: 'maintenance', label: 'Maintenance', href: 'Maintenance.dc.html', roles: null },
+      { id: 'audits', label: 'Audits', href: 'Audits.dc.html', roles: ['Admin', 'Asset Manager'] },
+      { id: 'reports', label: 'Reports', href: 'Reports.dc.html', roles: ['Admin', 'Asset Manager', 'Department Head'] },
+    ];
+    const nav = items.filter(i => !i.roles || i.roles.indexOf(role) >= 0).map(i => {
+      const on = i.id === active;
+      return { label: i.label, href: i.href, on, color: on ? '#fff' : '#9A9AA5', bg: on ? '#5F4DEE' : 'transparent' };
+    });
+    const unread = AF.notifications.filter(n => n.unread && n.for.indexOf(me.id) >= 0).length;
+    return {
+      nav, totalAssets: AF.assets.length, unread: unread > 0, role,
+      pickRole: e => { AF.setRole(e.target.value); location.reload(); },
+      meInitials: AF.initials(me.name), meTitle: me.name + ' — ' + role,
+      avBg: AF.avatarBg(me.id), avInk: AF.avatarInk(me.id),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

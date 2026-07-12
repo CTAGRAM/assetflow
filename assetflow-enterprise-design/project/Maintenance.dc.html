@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder,textarea::placeholder{color:#A2A3AE} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:12px; font-weight:600; color:#3F4046; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Maintenance">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="maintenance" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Maintenance</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">Raise issues and walk them through approval, assignment, and resolution.</div>
+      </div>
+      <button onClick="{{ toggleForm }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:8px; padding:11px 18px; border-radius:99px; background:{{ rBg }}; color:{{ rInk }}; border:1.5px solid {{ rBorder }}; font-family:inherit; font-size:12.5px; font-weight:700; box-shadow:0 6px 14px rgba(95,77,238,0.25)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="{{ rIcon }}"></path></svg>{{ rLabel }}</button>
+    </div>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; gap:9px; background:#E5F6EF; border:1px solid #BFE8D6; border-radius:14px; padding:11px 16px; margin-bottom:14px; font-size:12px; font-weight:700; color:#157A57">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>{{ toast }}
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff; border-radius:22px; padding:18px 20px; margin-bottom:18px; border:1.5px solid #DCD6FB">
+        <div style="font-size:14px; font-weight:800; margin-bottom:13px">Raise a maintenance request</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:230px; flex:1">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Asset *</label>
+            <select value="{{ fAsset }}" onChange="{{ setFAsset }}" style="box-sizing:border-box; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid {{ fAssetBorder }}">
+              <option value="">Pick the affected asset…</option>
+              <sc-for list="{{ assetOptions }}" as="a" hint-placeholder-count="10"><option value="{{ a.tag }}">{{ a.label }}</option></sc-for>
+            </select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:130px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Priority</label>
+            <select value="{{ fPri }}" onChange="{{ setFPri }}" style="box-sizing:border-box; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+              <option>Low</option><option>Medium</option><option>High</option>
+            </select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:130px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Photo</label>
+            <button style="all:unset; box-sizing:border-box; cursor:pointer; font-size:11px; font-weight:700; color:#6B6C75; padding:11px 12px; border-radius:11px; border:1.5px dashed #C9C9D6; text-align:center" style-hover="border-color:#5F4DEE; color:#5F4DEE">⇪ Attach</button>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:5px; margin-top:10px">
+          <label style="font-size:10.5px; font-weight:700; color:#3F4046">Describe the issue *</label>
+          <textarea value="{{ fIssue }}" onChange="{{ setFIssue }}" placeholder="What's wrong? When did it start? Any error codes?" rows="2" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid {{ fIssueBorder }}; resize:vertical; min-height:44px"></textarea>
+          <sc-if value="{{ fError }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; font-weight:600; color:#E14B3B">{{ fError }}</span></sc-if>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:12px">
+          <button onClick="{{ submit }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:11px 20px; border-radius:99px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12.5px; font-weight:800; box-shadow:0 6px 14px rgba(95,77,238,0.3)" style-hover="background:#4A39C9">Submit request</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="overflow-x:auto; padding-bottom:6px">
+      <div style="display:grid; grid-template-columns:repeat(5, minmax(215px, 1fr)); gap:12px; min-width:1100px">
+        <sc-for list="{{ cols }}" as="c" hint-placeholder-count="5">
+          <div style="background:{{ c.bg }}; border-radius:20px; padding:12px; min-height:280px">
+            <div style="display:flex; align-items:center; gap:7px; padding:2px 4px 10px">
+              <span style="width:8px; height:8px; border-radius:99px; background:{{ c.dot }}"></span>
+              <span style="font-size:11.5px; font-weight:800; color:{{ c.ink }}">{{ c.label }}</span>
+              <span style="margin-left:auto; font-size:10px; font-weight:800; background:{{ c.countBg }}; color:{{ c.countInk }}; border-radius:99px; padding:2px 8px">{{ c.count }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <sc-for list="{{ c.cards }}" as="k" hint-placeholder-count="2">
+                <div style="background:#fff; border-radius:15px; padding:12px 13px; box-shadow:0 1px 4px rgba(23,23,28,0.06)">
+                  <div style="display:flex; align-items:center; gap:7px">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:700; color:#5F4DEE">{{ k.id }}</span>
+                    <span style="font-size:9.5px; font-weight:800; border-radius:99px; padding:2px 8px; background:{{ k.priBg }}; color:{{ k.priInk }}; margin-left:auto">{{ k.pri }}</span>
+                  </div>
+                  <div style="font-size:12px; font-weight:800; margin-top:6px">{{ k.asset }}</div>
+                  <div style="font-size:11px; font-weight:500; color:#6B6C75; line-height:1.5; margin-top:4px">{{ k.issue }}</div>
+                  <div style="display:flex; align-items:center; gap:6px; margin-top:9px">
+                    <span style="width:20px; height:20px; border-radius:99px; background:{{ k.avBg }}; color:{{ k.avInk }}; display:grid; place-items:center; font-size:7.5px; font-weight:800">{{ k.init }}</span>
+                    <span style="font-size:10px; font-weight:600; color:#A2A3AE">{{ k.by }} · {{ k.date }}</span>
+                    <sc-if value="{{ k.photo }}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg></sc-if>
+                  </div>
+                  <sc-if value="{{ k.tech }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10px; font-weight:700; color:#6D4FC2; background:#EFEAF9; border-radius:8px; padding:5px 9px; margin-top:8px">🔧 {{ k.tech }}</div>
+                  </sc-if>
+                  <sc-if value="{{ k.showApprove }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; gap:6px; margin-top:10px">
+                      <button onClick="{{ k.approve }}" style="all:unset; box-sizing:border-box; cursor:pointer; flex:1; text-align:center; font-size:10.5px; font-weight:800; padding:7px; border-radius:99px; background:#17171C; color:#fff" style-hover="background:#5F4DEE">Approve</button>
+                      <button onClick="{{ k.reject }}" style="all:unset; box-sizing:border-box; cursor:pointer; flex:1; text-align:center; font-size:10.5px; font-weight:800; padding:7px; border-radius:99px; border:1.5px solid #F5C6BE; color:#C0331F" style-hover="background:#FDECEA">Reject</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ k.showAssign }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; gap:6px; margin-top:10px">
+                      <select value="{{ k.techPick }}" onChange="{{ k.setTechPick }}" style="box-sizing:border-box; flex:1; font-size:10.5px; padding:7px 9px; border-radius:99px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+                        <option value="">Technician…</option><option>FixIT Desk</option><option>AutoServ GmbH</option><option>AV Partners</option><option>In-house — Facilities</option>
+                      </select>
+                      <button onClick="{{ k.assign }}" style="all:unset; box-sizing:border-box; cursor:pointer; font-size:10.5px; font-weight:800; padding:7px 12px; border-radius:99px; background:#17171C; color:#fff" style-hover="background:#5F4DEE">Assign</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ k.showStart }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ k.start }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:block; width:100%; text-align:center; font-size:10.5px; font-weight:800; padding:7px; border-radius:99px; background:#17171C; color:#fff; margin-top:10px" style-hover="background:#5F4DEE">Start work →</button>
+                  </sc-if>
+                  <sc-if value="{{ k.showResolve }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ k.resolve }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:block; width:100%; text-align:center; font-size:10.5px; font-weight:800; padding:7px; border-radius:99px; background:#1FA97A; color:#fff; margin-top:10px" style-hover="background:#157A57">Mark resolved ✓</button>
+                  </sc-if>
+                  <sc-if value="{{ k.resolvedLine }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10px; font-weight:700; color:#157A57; margin-top:8px">✓ {{ k.resolvedLine }}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ c.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1.5px dashed {{ c.dash }}; border-radius:14px; padding:18px 10px; text-align:center; font-size:10.5px; font-weight:600; color:{{ c.emptyInk }}">{{ c.emptyText }}</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{ hasRejected }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff; border-radius:18px; padding:13px 18px; margin-top:14px; display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+        <span style="font-size:11px; font-weight:800; color:#C0331F">Rejected</span>
+        <sc-for list="{{ rejected }}" as="rj" hint-placeholder-count="1">
+          <span style="font-size:11px; font-weight:600; color:#6B6C75"><span style="font-family:'IBM Plex Mono',monospace; font-weight:700; color:#8A8B95">{{ rj.id }}</span> {{ rj.line }}</span>
+        </sc-for>
+      </div>
+    </sc-if>
+    <div style="font-size:10.5px; font-weight:600; color:#A2A3AE; margin-top:12px">Approving flips the asset to <b>Under Maintenance</b>; resolving returns it to <b>Available</b>. Full per-asset maintenance history lives in the <a href="Assets.dc.html">Asset Registry</a> detail view.</div>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { reqs: null, formOpen: false, fAsset: '', fPri: 'Medium', fIssue: '', tried: false, toast: null, techPicks: {} };
+  componentDidMount() {
+    const AF = window.AF; if (AF) this.setState({ reqs: AF.maintenance.map(m => ({ ...m })) });
+    if (location.hash === '#raise') this.setState({ formOpen: true });
+  }
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  flash(m) { this.setState({ toast: m }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: null }), 4500); }
+  renderVals() {
+    const AF = window.AF; if (!AF || !this.state.reqs) return {};
+    const s = this.state, role = AF.role(), me = AF.me();
+    const canApprove = role === 'Asset Manager' || role === 'Admin';
+
+    const priC = { High: ['#FDECEA', '#C0331F'], Medium: ['#FBF1E0', '#A65B04'], Low: ['#F1F1F6', '#6B6C75'] };
+    const mkCard = m => {
+      const a = AF.asset(m.asset) || {};
+      return {
+        id: m.id, asset: m.asset + ' · ' + (a.name || ''), issue: m.issue,
+        pri: m.pri || m.priority, priBg: priC[m.priority][0], priInk: priC[m.priority][1],
+        by: AF.empName(m.by), date: AF.fmtDate(m.date), init: AF.initials(AF.empName(m.by)),
+        avBg: AF.avatarBg(m.by), avInk: AF.avatarInk(m.by), photo: !!m.photo,
+        tech: (m.stage === 'Technician Assigned' || m.stage === 'In Progress') && m.tech ? m.tech : false,
+        showApprove: m.stage === 'Pending' && canApprove,
+        showAssign: m.stage === 'Approved' && canApprove,
+        showStart: m.stage === 'Technician Assigned' && canApprove,
+        showResolve: m.stage === 'In Progress' && canApprove,
+        resolvedLine: m.stage === 'Resolved' ? 'Closed ' + AF.fmtDate(m.resolved || m.date) + (m.tech ? ' by ' + m.tech : '') : false,
+        techPick: s.techPicks[m.id] || '',
+        setTechPick: e => this.setState({ techPicks: { ...s.techPicks, [m.id]: e.target.value } }),
+        approve: () => { m.stage = 'Approved'; this.forceUpdate(); this.flash(m.id + ' approved by ' + me.name + ' — ' + m.asset + ' is now Under Maintenance.'); },
+        reject: () => { m.stage = 'Rejected'; m.rejectReason = 'Rejected by ' + me.name; this.forceUpdate(); this.flash(m.id + ' rejected. The requester has been notified.'); },
+        assign: () => { const t = s.techPicks[m.id]; if (!t) { this.flash('Pick a technician first.'); return; } m.tech = t; m.stage = 'Technician Assigned'; this.forceUpdate(); this.flash(t + ' assigned to ' + m.id + '.'); },
+        start: () => { m.stage = 'In Progress'; this.forceUpdate(); this.flash(m.id + ' is now in progress.'); },
+        resolve: () => { m.stage = 'Resolved'; m.resolved = AF.TODAY; this.forceUpdate(); this.flash(m.id + ' resolved — ' + m.asset + ' flipped back to Available.'); },
+      };
+    };
+
+    const stages = ['Pending', 'Approved', 'Technician Assigned', 'In Progress', 'Resolved'];
+    const colC = { Pending: ['#FBF1E0', '#A65B04'], Approved: ['#E9EFFC', '#2456C4'], 'Technician Assigned': ['#EFEAF9', '#6D4FC2'], 'In Progress': ['#EEEBFE', '#4A39C9'], Resolved: ['#E5F6EF', '#157A57'] };
+    const emptyTexts = { Pending: 'Nothing waiting — raise a request above.', Approved: 'Approved requests land here for technician assignment.', 'Technician Assigned': 'No jobs assigned right now.', 'In Progress': 'No active repairs.', Resolved: 'Resolved jobs will pile up here.' };
+    const cols = stages.map(st => {
+      const cards = s.reqs.filter(m => m.stage === st).map(mkCard);
+      return { label: st, count: cards.length, cards, empty: cards.length === 0,
+        bg: '#ffffff66', dot: colC[st][1], ink: '#17171C', countBg: colC[st][0], countInk: colC[st][1],
+        dash: '#E1E1E8', emptyInk: '#A2A3AE', emptyText: emptyTexts[st] };
+    });
+
+    const rejected = s.reqs.filter(m => m.stage === 'Rejected').map(m => ({ id: m.id, line: (AF.asset(m.asset) || {}).name + ' — ' + (m.rejectReason || 'rejected') }));
+
+    const assetOptions = AF.assets.filter(a => ['Lost', 'Disposed', 'Retired'].indexOf(a.status) < 0 && a.cat !== 'rooms').map(a => ({ tag: a.tag, label: a.tag + ' — ' + a.name }));
+    const issueOk = s.fIssue.trim().length >= 10, assetOk = !!s.fAsset;
+
+    return {
+      formOpen: s.formOpen,
+      rLabel: s.formOpen ? 'Close form' : 'Raise a request',
+      rIcon: s.formOpen ? 'M18 6L6 18M6 6l12 12' : 'M12 5v14M5 12h14',
+      rBg: s.formOpen ? '#fff' : '#5F4DEE', rInk: s.formOpen ? '#17171C' : '#fff', rBorder: s.formOpen ? '#E7E7EE' : '#5F4DEE',
+      toggleForm: () => this.setState({ formOpen: !s.formOpen, tried: false }),
+      assetOptions,
+      fAsset: s.fAsset, setFAsset: this.set('fAsset'), fPri: s.fPri, setFPri: this.set('fPri'), fIssue: s.fIssue, setFIssue: this.set('fIssue'),
+      fAssetBorder: s.tried && !assetOk ? '#E14B3B' : '#EBEBF1',
+      fIssueBorder: s.tried && !issueOk ? '#E14B3B' : '#EBEBF1',
+      fError: s.tried && (!assetOk || !issueOk) ? (!assetOk ? 'Pick the affected asset.' : 'Describe the issue in at least 10 characters so the Asset Manager can triage it.') : false,
+      submit: () => {
+        if (!assetOk || !issueOk) { this.setState({ tried: true }); return; }
+        const id = 'MR-' + Math.floor(93 + Math.random() * 80);
+        this.setState({ reqs: [{ id, asset: s.fAsset, by: me.id, date: AF.TODAY, priority: s.fPri, stage: 'Pending', tech: null, issue: s.fIssue.trim(), photo: false }].concat(s.reqs), formOpen: false, fAsset: '', fIssue: '', tried: false });
+        this.flash(id + ' submitted — waiting for Asset Manager approval.');
+      },
+      cols, rejected, hasRejected: rejected.length > 0,
+      toast: s.toast || false,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

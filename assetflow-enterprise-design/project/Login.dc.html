@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#F4F3F0} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder{color:#AEB2C2}</style>
+</helmet>
+<div style="min-height:100vh; background:#F4F3F0; position:relative; overflow:hidden; display:grid; place-items:center; padding:40px 20px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#2B2D33" data-screen-label="Login / Signup">
+
+  <svg width="360" height="360" viewBox="0 0 200 200" style="position:absolute; top:-70px; left:-60px; opacity:0.5" fill="none" stroke="#DDE0F2" stroke-width="2" stroke-linecap="round"><path d="M100 180 C100 120 100 80 100 20"></path><path d="M100 150 C70 140 50 120 45 95M100 150 C130 140 150 120 155 95M100 115 C75 105 60 90 55 70M100 115 C125 105 140 90 145 70M100 80 C82 72 70 60 66 45M100 80 C118 72 130 60 134 45"></path></svg>
+  <svg width="420" height="420" viewBox="0 0 200 200" style="position:absolute; bottom:-120px; right:-90px; opacity:0.55; transform:rotate(160deg)" fill="none" stroke="#DDE0F2" stroke-width="2" stroke-linecap="round"><path d="M100 180 C100 120 100 80 100 20"></path><path d="M100 150 C70 140 50 120 45 95M100 150 C130 140 150 120 155 95M100 115 C75 105 60 90 55 70M100 115 C125 105 140 90 145 70M100 80 C82 72 70 60 66 45M100 80 C118 72 130 60 134 45"></path></svg>
+  <div style="position:absolute; top:18%; right:8%; width:220px; height:220px; border-radius:99px; background:radial-gradient(circle, rgba(95,77,238,0.07), transparent 70%)"></div>
+
+  <div style="width:min(960px, 100%); background:#fff; border-radius:10px; box-shadow:0 24px 70px rgba(43,45,51,0.13); position:relative">
+    <!-- card header -->
+    <div style="display:flex; align-items:center; padding:26px 38px 6px">
+      <span style="font-size:17px; font-weight:800; letter-spacing:0.5px; color:#2B2D33">assetflow<span style="color:#5F4DEE">.</span></span>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:26px">
+        <a href="Explore.dc.html" style="font-size:11px; font-weight:600; color:#7A7E8C; text-decoration:none" style-hover="color:#2B2D33">Explore demo</a>
+        <a href="Contact.dc.html" style="font-size:11px; font-weight:600; color:#7A7E8C; text-decoration:none" style-hover="color:#2B2D33">Contact IT</a>
+        <sc-for list="{{ headerModes }}" as="m" hint-placeholder-count="2">
+          <button onClick="{{ m.pick }}" style="all:unset; cursor:pointer; font-size:11px; font-weight:{{ m.weight }}; color:{{ m.color }}; border-bottom:2px solid {{ m.underline }}; padding-bottom:2px">{{ m.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1.05fr 1fr; gap:20px; align-items:center; padding:10px 38px 40px">
+      <!-- illustration -->
+      <div style="min-height:380px; background:#fff url('img/login-illo.jpg') center/contain no-repeat"></div>
+
+      <!-- form column -->
+      <div style="padding:14px 8px 0 22px">
+        <sc-if value="{{ notDone }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <h1 style="margin:0 0 12px; font-size:26px; font-weight:600; letter-spacing:-0.4px; color:#2B2D33">{{ headline }}</h1>
+            <p style="margin:0 0 26px; font-size:13px; font-weight:500; color:#8A8E9C; line-height:1.65; max-width:340px">{{ subline }}</p>
+
+            <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-bottom:20px">
+                <input value="{{ name }}" onChange="{{ setName }}" onBlur="{{ touchName }}" placeholder="Full name" style="all:unset; box-sizing:border-box; width:100%; max-width:340px; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; padding:9px 2px; border-bottom:1.5px solid {{ nameBorder }}">
+                <sc-if value="{{ nameError }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px; font-weight:600; color:#E14B3B; margin-top:5px">{{ nameError }}</div></sc-if>
+              </div>
+            </sc-if>
+
+            <div style="margin-bottom:20px">
+              <input value="{{ email }}" onChange="{{ setEmail }}" onBlur="{{ touchEmail }}" placeholder="Work email" style="all:unset; box-sizing:border-box; width:100%; max-width:340px; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; padding:9px 2px; border-bottom:1.5px solid {{ emailBorder }}">
+              <sc-if value="{{ emailError }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px; font-weight:600; color:#E14B3B; margin-top:5px">{{ emailError }}</div></sc-if>
+            </div>
+
+            <sc-if value="{{ notForgot }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-bottom:20px">
+                <input type="password" value="{{ pw }}" onChange="{{ setPw }}" onBlur="{{ touchPw }}" placeholder="{{ pwPlaceholder }}" style="all:unset; box-sizing:border-box; width:100%; max-width:340px; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; padding:9px 2px; border-bottom:1.5px solid {{ pwBorder }}">
+                <sc-if value="{{ pwError }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px; font-weight:600; color:#E14B3B; margin-top:5px">{{ pwError }}</div></sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-bottom:20px">
+                <input type="password" value="{{ pw2 }}" onChange="{{ setPw2 }}" onBlur="{{ touchPw2 }}" placeholder="Retype password" style="all:unset; box-sizing:border-box; width:100%; max-width:340px; font-family:inherit; font-size:13px; font-weight:600; color:#2B2D33; padding:9px 2px; border-bottom:1.5px solid {{ pw2Border }}">
+                <sc-if value="{{ pw2Error }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px; font-weight:600; color:#E14B3B; margin-top:5px">{{ pw2Error }}</div></sc-if>
+              </div>
+            </sc-if>
+
+            <button onClick="{{ toggleCheck }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:flex-start; gap:9px; margin:4px 0 24px; max-width:340px">
+              <span style="width:16px; height:16px; border-radius:4px; border:1.5px solid {{ checkBorder }}; background:{{ checkBg }}; display:grid; place-items:center; flex:none; margin-top:1px">
+                <sc-if value="{{ checked }}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></sc-if>
+              </span>
+              <span style="font-size:11px; font-weight:500; color:#8A8E9C; line-height:1.5; text-align:left">{{ checkLabel }}</span>
+            </button>
+
+            <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11px; font-weight:700; color:#E14B3B; margin-bottom:14px">{{ formError }}</div>
+            </sc-if>
+
+            <div style="display:flex; align-items:center; gap:18px">
+              <button onClick="{{ submit }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:11px 26px; border-radius:8px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12.5px; font-weight:700; box-shadow:0 8px 18px rgba(95,77,238,0.32)" style-hover="background:#4A39C9">{{ ctaLabel }}</button>
+              <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ goForgot }}" style="all:unset; cursor:pointer; font-size:11.5px; font-weight:600; color:#8A8E9C" style-hover="color:#5F4DEE">Forgot password?</button>
+              </sc-if>
+              <sc-if value="{{ isForgot }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ backToLogin }}" style="all:unset; cursor:pointer; font-size:11.5px; font-weight:600; color:#8A8E9C" style-hover="color:#5F4DEE">← Back to log in</button>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:10.5px; font-weight:500; color:#AEB2C2; margin-top:18px; max-width:340px; line-height:1.55">New accounts start as <b style="color:#7A7E8C">Employee</b> — an Admin promotes roles from the Employee Directory.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="width:46px; height:46px; border-radius:99px; background:#E5F6EF; display:grid; place-items:center; margin-bottom:16px">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1FA97A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            </div>
+            <h1 style="margin:0 0 10px; font-size:24px; font-weight:600; letter-spacing:-0.4px">{{ doneTitle }}</h1>
+            <p style="margin:0 0 24px; font-size:13px; font-weight:500; color:#8A8E9C; line-height:1.65; max-width:340px">{{ doneBody }}</p>
+            <div style="display:flex; align-items:center; gap:18px">
+              <sc-if value="{{ doneGoApp }}" hint-placeholder-val="{{ true }}">
+                <a href="Dashboard.dc.html" style="display:inline-block; padding:11px 26px; border-radius:8px; background:#5F4DEE; color:#fff; text-decoration:none; font-size:12.5px; font-weight:700; box-shadow:0 8px 18px rgba(95,77,238,0.32)" style-hover="background:#4A39C9; color:#fff">Go to dashboard</a>
+              </sc-if>
+              <button onClick="{{ reset }}" style="all:unset; cursor:pointer; font-size:11.5px; font-weight:600; color:#8A8E9C" style-hover="color:#5F4DEE">← Back</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute; bottom:16px; left:0; right:0; text-align:center; font-size:10px; font-weight:600; color:#B8BBC7">Demo build for the Odoo Hackathon · Northwind Labs workspace</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { mode: 'login', name: '', email: '', pw: '', pw2: '', touched: {}, submitted: false, done: null, checked: false };
+  componentDidMount() {
+    const h = location.hash.replace('#', '');
+    if (h === 'signup' || h === 'forgot' || h === 'login') this.setState({ mode: h });
+  }
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  touch(k) { return () => this.setState(s => ({ touched: { ...s.touched, [k]: true } })); }
+  renderVals() {
+    const s = this.state, mode = s.mode;
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.email);
+    const show = k => s.touched[k] || s.submitted;
+    const nameError = mode === 'signup' && show('name') && s.name.trim().length < 2 ? 'Enter your full name.' : false;
+    const emailError = show('email') && s.email && !emailOk ? '“' + s.email + '” isn\'t a valid email — check for a missing @ or domain.' : (show('email') && !s.email ? 'Email is required.' : false);
+    const pwError = mode !== 'forgot' && show('pw') && s.pw.length > 0 && s.pw.length < 8 ? 'At least 8 characters (yours is ' + s.pw.length + ').' : (mode !== 'forgot' && show('pw') && !s.pw ? 'Password is required.' : false);
+    const pw2Error = mode === 'signup' && show('pw2') && s.pw2 && s.pw2 !== s.pw ? 'Passwords don\'t match.' : false;
+    const valid = mode === 'forgot' ? emailOk
+      : mode === 'login' ? emailOk && s.pw.length >= 8
+      : s.name.trim().length >= 2 && emailOk && s.pw.length >= 8 && s.pw2 === s.pw;
+
+    const border = (err, val, ok) => err ? '#E14B3B' : (val && ok ? '#2B2D33' : '#DADDE8');
+    const headerModes = [['login', 'Log in'], ['signup', 'Sign up']].map(m => {
+      const on = mode === m[0] || (mode === 'forgot' && m[0] === 'login');
+      return { label: m[1], weight: on ? 800 : 600, color: on ? '#5F4DEE' : '#7A7E8C', underline: on ? '#5F4DEE' : 'transparent',
+        pick: () => this.setState({ mode: m[0], submitted: false, touched: {} }) };
+    });
+
+    return {
+      headerModes,
+      isLogin: mode === 'login', isSignup: mode === 'signup', isForgot: mode === 'forgot', notForgot: mode !== 'forgot',
+      headline: mode === 'forgot' ? 'Reset your password' : mode === 'signup' ? 'Join the workspace' : 'Every asset, accounted for.',
+      subline: mode === 'forgot' ? 'Enter the email on your account and we\'ll send a reset link. It expires in 30 minutes.'
+        : mode === 'signup' ? 'Create your Employee account to see your assets, book resources, and raise requests at Northwind Labs.'
+        : 'Sign in to track assets, book shared resources, and keep Northwind Labs running smoothly.',
+      name: s.name, email: s.email, pw: s.pw, pw2: s.pw2,
+      setName: this.set('name'), setEmail: this.set('email'), setPw: this.set('pw'), setPw2: this.set('pw2'),
+      touchName: this.touch('name'), touchEmail: this.touch('email'), touchPw: this.touch('pw'), touchPw2: this.touch('pw2'),
+      nameError, emailError, pwError, pw2Error,
+      nameBorder: border(nameError, s.name, s.name.trim().length >= 2),
+      emailBorder: border(emailError, s.email, emailOk),
+      pwBorder: border(pwError, s.pw, s.pw.length >= 8),
+      pw2Border: border(pw2Error, s.pw2, s.pw2 && s.pw2 === s.pw),
+      pwPlaceholder: mode === 'signup' ? 'Password — at least 8 characters' : 'Password',
+      checked: s.checked, toggleCheck: () => this.setState({ checked: !s.checked }),
+      checkBorder: s.checked ? '#5F4DEE' : '#C9CCDA', checkBg: s.checked ? '#5F4DEE' : '#fff',
+      checkLabel: mode === 'signup' ? 'Notify me about approvals, bookings, and overdue returns.' : 'Keep me signed in on this device.',
+      formError: s.submitted && !valid ? 'Fix the highlighted fields to continue.' : false,
+      ctaLabel: mode === 'forgot' ? 'Send reset link' : mode === 'signup' ? 'Create account' : 'Sign in',
+      goForgot: () => this.setState({ mode: 'forgot', submitted: false, touched: {} }),
+      backToLogin: () => this.setState({ mode: 'login', submitted: false, touched: {} }),
+      submit: () => { if (!valid) { this.setState({ submitted: true }); return; } this.setState({ done: mode, submitted: false }); },
+      notDone: !s.done, done: !!s.done,
+      doneTitle: s.done === 'forgot' ? 'Reset link sent' : s.done === 'signup' ? 'Welcome to AssetFlow!' : 'Welcome back',
+      doneBody: s.done === 'forgot' ? 'If ' + s.email + ' has an account, a reset link is on its way.'
+        : s.done === 'signup' ? 'Your Employee account is ready — view your assets, book resources, and raise requests right away.'
+        : 'Signed in as ' + (s.email || 'you') + '. Your dashboard is waiting.',
+      doneGoApp: s.done !== 'forgot',
+      reset: () => this.setState({ done: null, mode: 'login', pw: '', pw2: '', submitted: false, touched: {} }),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

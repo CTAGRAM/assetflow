@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>body{margin:0; background:#fff} a{color:#5F4DEE} a:hover{color:#4A39C9} input::placeholder{color:#A2A3AE} select{border:none; outline:none; background:transparent; font-family:inherit; font-size:12px; font-weight:600; color:#3F4046; cursor:pointer}</style>
+</helmet>
+<div style="min-height:100vh; background:#fff; padding:16px; box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:#17171C" data-screen-label="Audit Cycles">
+<div style="max-width:1240px; margin:0 auto; background:#F4F5F9; border-radius:28px; overflow:hidden">
+  <dc-import name="Topbar" active="audits" hint-size="100%,60px"></dc-import>
+  <div style="padding:24px 26px 28px">
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap">
+      <a href="Dashboard.dc.html" style="width:36px; height:36px; border-radius:99px; background:#fff; border:1px solid #E7E7EE; display:grid; place-items:center; text-decoration:none" style-hover="border-color:#5F4DEE"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#17171C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></a>
+      <div style="flex:1; min-width:200px">
+        <h1 style="margin:0; font-size:28px; font-weight:800; letter-spacing:-0.6px">Audit Cycles</h1>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:2px">Walk the floor, verify every asset, and close the loop on discrepancies.</div>
+      </div>
+      <button onClick="{{ toggleForm }}" style="all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:8px; padding:11px 18px; border-radius:99px; background:{{ nBg }}; color:{{ nInk }}; border:1.5px solid {{ nBorder }}; font-family:inherit; font-size:12.5px; font-weight:700; box-shadow:0 6px 14px rgba(95,77,238,0.25)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="{{ nIcon }}"></path></svg>{{ nLabel }}</button>
+    </div>
+
+    <sc-if value="{{ locked }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff; border-radius:22px; padding:56px 20px; text-align:center">
+        <div style="width:52px; height:52px; border-radius:99px; background:#F1F1F6; display:grid; place-items:center; margin:0 auto 14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A2A3AE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg></div>
+        <div style="font-size:14px; font-weight:800">Audits are for Admins and Asset Managers</div>
+        <div style="font-size:12px; color:#A2A3AE; font-weight:500; margin-top:4px">You're viewing as {{ roleName }}. Switch roles in the top bar.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+      <div>
+      <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; gap:9px; background:#E5F6EF; border:1px solid #BFE8D6; border-radius:14px; padding:11px 16px; margin-bottom:14px; font-size:12px; font-weight:700; color:#157A57">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>{{ toast }}
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border-radius:22px; padding:18px 20px; margin-bottom:16px; border:1.5px solid #DCD6FB; display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap">
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:150px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Scope</label>
+            <select value="{{ fScope }}" onChange="{{ setFScope }}" style="box-sizing:border-box; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+              <sc-for list="{{ scopeOptions }}" as="o" hint-placeholder-count="10"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+            </select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:135px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">From</label>
+            <input type="date" value="{{ fFrom }}" onChange="{{ setFFrom }}" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:135px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">To</label>
+            <input type="date" value="{{ fTo }}" onChange="{{ setFTo }}" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:160px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Auditor 1</label>
+            <select value="{{ fAud1 }}" onChange="{{ setFAud1 }}" style="box-sizing:border-box; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+              <sc-for list="{{ audOptions }}" as="o" hint-placeholder-count="8"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
+            </select>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; min-width:160px">
+            <label style="font-size:10.5px; font-weight:700; color:#3F4046">Auditor 2 (optional)</label>
+            <select value="{{ fAud2 }}" onChange="{{ setFAud2 }}" style="box-sizing:border-box; font-size:12.5px; padding:11px 12px; border-radius:11px; background:#F7F7FA; border:1.5px solid #EBEBF1">
+              <option value="">None</option>
+              <sc-for list="{{ audOptions }}" as="o" hint-placeholder-count="8"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
+            </select>
+          </div>
+          <button onClick="{{ createCycle }}" style="all:unset; box-sizing:border-box; cursor:pointer; padding:11px 18px; border-radius:99px; background:#5F4DEE; color:#fff; font-family:inherit; font-size:12.5px; font-weight:800; box-shadow:0 6px 14px rgba(95,77,238,0.3)" style-hover="background:#4A39C9">Open cycle</button>
+        </div>
+      </sc-if>
+
+      <div style="display:grid; grid-template-columns:290px minmax(0,1fr); gap:16px; align-items:start">
+        <!-- cycles list -->
+        <div style="display:flex; flex-direction:column; gap:10px">
+          <sc-for list="{{ cycles }}" as="c" hint-placeholder-count="3">
+            <button onClick="{{ c.pick }}" style="all:unset; box-sizing:border-box; cursor:pointer; background:{{ c.bg }}; border:1.5px solid {{ c.border }}; border-radius:18px; padding:14px 16px" style-hover="border-color:#5F4DEE">
+              <div style="display:flex; align-items:center; gap:8px">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:700; color:{{ c.idInk }}">{{ c.id }}</span>
+                <span style="font-size:9.5px; font-weight:800; border-radius:99px; padding:3px 9px; background:{{ c.stBg }}; color:{{ c.stInk }}; margin-left:auto">{{ c.st }}</span>
+              </div>
+              <div style="font-size:12.5px; font-weight:800; margin-top:6px; color:{{ c.ink }}">{{ c.name }}</div>
+              <div style="font-size:10.5px; font-weight:600; color:{{ c.sub }}; margin-top:3px">{{ c.range }} · {{ c.auditors }}</div>
+              <div style="height:5px; border-radius:99px; background:{{ c.trackBg }}; margin-top:10px; overflow:hidden">
+                <div style="height:100%; border-radius:99px; background:{{ c.barColor }}; width:{{ c.pct }}%"></div>
+              </div>
+              <div style="font-size:9.5px; font-weight:700; color:{{ c.sub }}; margin-top:5px">{{ c.progressLine }}</div>
+            </button>
+          </sc-for>
+        </div>
+
+        <!-- working view -->
+        <div style="display:flex; flex-direction:column; gap:14px; min-width:0">
+          <div style="background:#fff; border-radius:22px; overflow:hidden">
+            <div style="display:flex; align-items:center; gap:10px; padding:15px 18px; border-bottom:1px solid #F1F1F5; flex-wrap:wrap">
+              <span style="font-size:13.5px; font-weight:800">{{ selName }}</span>
+              <span style="font-size:10px; font-weight:700; color:#A2A3AE">{{ selMeta }}</span>
+              <sc-if value="{{ selOpen }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ closeCycle }}" style="all:unset; box-sizing:border-box; cursor:pointer; margin-left:auto; font-size:11px; font-weight:800; padding:8px 15px; border-radius:99px; background:#17171C; color:#fff" style-hover="background:#C0331F">Close &amp; lock cycle</button>
+              </sc-if>
+              <sc-if value="{{ selClosed }}" hint-placeholder-val="{{ false }}">
+                <span style="margin-left:auto; display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; color:#8A8B95"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>Locked {{ closedDate }} — read only</span>
+              </sc-if>
+            </div>
+            <sc-for list="{{ items }}" as="it" hint-placeholder-count="6">
+              <div style="display:flex; align-items:center; gap:11px; padding:10px 18px; border-bottom:1px solid #F6F6F9; flex-wrap:wrap; background:{{ it.bg }}">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:#5F4DEE; min-width:66px">{{ it.tag }}</span>
+                <div style="flex:1; min-width:140px">
+                  <div style="font-size:12.5px; font-weight:700">{{ it.name }}</div>
+                  <div style="font-size:10.5px; font-weight:600; color:#A2A3AE">{{ it.loc }} · held by {{ it.holder }}</div>
+                </div>
+                <sc-if value="{{ it.editable }}" hint-placeholder-val="{{ true }}">
+                  <input value="{{ it.note }}" onChange="{{ it.setNote }}" placeholder="Note…" style="all:unset; box-sizing:border-box; font-family:inherit; font-size:11px; font-weight:600; padding:7px 11px; border-radius:99px; background:#F7F7FA; border:1.5px solid #EBEBF1; width:170px">
+                </sc-if>
+                <sc-if value="{{ it.noteRO }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10.5px; font-weight:600; color:#6B6C75; font-style:italic; max-width:200px">{{ it.noteRO }}</span>
+                </sc-if>
+                <div style="display:flex; gap:4px">
+                  <sc-for list="{{ it.marks }}" as="m" hint-placeholder-count="3">
+                    <button onClick="{{ m.pick }}" style="all:unset; box-sizing:border-box; cursor:{{ m.cursor }}; font-size:10px; font-weight:800; padding:6px 11px; border-radius:99px; background:{{ m.bg }}; color:{{ m.ink }}; border:1.5px solid {{ m.border }}">{{ m.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ hasDisc }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#17171C; border-radius:22px; padding:18px">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:12px">
+                <span style="color:#fff; font-size:13.5px; font-weight:800">Discrepancy report</span>
+                <span style="font-size:10px; font-weight:800; background:#E14B3B; color:#fff; border-radius:99px; padding:2px 9px">{{ discCount }}</span>
+                <span style="margin-left:auto; font-size:10px; font-weight:600; color:#9A9AA5">{{ discNote }}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:7px">
+                <sc-for list="{{ disc }}" as="dd" hint-placeholder-count="2">
+                  <div style="display:flex; align-items:center; gap:10px; background:#1E1E24; border-radius:14px; padding:11px 14px; flex-wrap:wrap">
+                    <span style="font-size:9.5px; font-weight:800; border-radius:99px; padding:3px 9px; background:{{ dd.chipBg }}; color:{{ dd.chipInk }}">{{ dd.kind }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:#9A9AA5">{{ dd.tag }}</span>
+                    <span style="font-size:12px; font-weight:700; color:#fff">{{ dd.name }}</span>
+                    <span style="font-size:10.5px; font-weight:500; color:#9A9AA5; flex:1; min-width:120px">{{ dd.note }}</span>
+                    <span style="font-size:10px; font-weight:700; color:{{ dd.actionInk }}">{{ dd.action }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { audits: null, sel: 'AU-07', formOpen: false, toast: null, fScope: 'loc:HQ · Floor 2', fFrom: '2026-07-20', fTo: '2026-08-07', fAud1: 'daniel', fAud2: '' };
+  componentDidMount() { const AF = window.AF; if (AF) this.setState({ audits: AF.audits.map(a => ({ ...a, items: a.items.map(i => ({ ...i })) })) }); }
+  set(k) { return e => this.setState({ [k]: e.target.value }); }
+  flash(m) { this.setState({ toast: m }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: null }), 4500); }
+  renderVals() {
+    const AF = window.AF; if (!AF) return {};
+    const s = this.state, role = AF.role();
+    if (role !== 'Admin' && role !== 'Asset Manager') return { locked: true, open: false, roleName: role, nLabel: 'New cycle', nIcon: 'M12 5v14M5 12h14', nBg: '#5F4DEE', nInk: '#fff', nBorder: '#5F4DEE', toggleForm: () => {} };
+    if (!s.audits) return { locked: false, open: false, nLabel: 'New cycle', nIcon: 'M12 5v14M5 12h14', nBg: '#5F4DEE', nInk: '#fff', nBorder: '#5F4DEE', toggleForm: () => {} };
+
+    const cycles = s.audits.map(a => {
+      const done = a.items.filter(i => i.result).length, pct = Math.round(done / (a.items.length || 1) * 100);
+      const on = a.id === s.sel, closed = a.status === 'Closed';
+      return { id: a.id, name: a.name, st: a.status,
+        range: AF.fmtDate(a.from) + ' – ' + AF.fmtDate(a.to),
+        auditors: a.auditors.map(x => AF.empName(x).split(' ')[0]).join(' & '),
+        pct, progressLine: done + ' of ' + a.items.length + ' checked' + (closed ? ' · locked' : ''),
+        bg: on ? '#17171C' : '#fff', border: on ? '#17171C' : '#E7E7EE',
+        ink: on ? '#fff' : '#17171C', sub: on ? '#9A9AA5' : '#A2A3AE', idInk: on ? '#8A7DF2' : '#5F4DEE',
+        stBg: closed ? (on ? '#26262C' : '#F1F1F6') : '#8EF0C6', stInk: closed ? '#8A8B95' : '#0B3D2A',
+        trackBg: on ? '#26262C' : '#F1F1F6', barColor: closed ? '#8A8B95' : '#5F4DEE',
+        pick: () => this.setState({ sel: a.id }) };
+    });
+
+    const sel = s.audits.find(a => a.id === s.sel) || s.audits[0];
+    const editable = sel.status !== 'Closed';
+    const markC = { Verified: ['#E5F6EF', '#157A57', '#8FDDBB'], Missing: ['#FDECEA', '#C0331F', '#F5C6BE'], Damaged: ['#FBF1E0', '#A65B04', '#F2D9AE'] };
+    const items = sel.items.map(it => {
+      const a = AF.asset(it.asset) || {};
+      return {
+        tag: it.asset, name: a.name || it.asset, loc: a.loc || '—',
+        holder: a.holder ? (a.holderType === 'department' ? AF.deptName(a.holder) : AF.empName(a.holder)) : '—',
+        bg: it.result === 'Missing' ? '#FFFBFA' : it.result === 'Damaged' ? '#FFFDF7' : 'transparent',
+        editable, note: it.note || '', noteRO: !editable && it.note ? '“' + it.note + '”' : false,
+        setNote: e => { it.note = e.target.value; this.forceUpdate(); },
+        marks: ['Verified', 'Missing', 'Damaged'].map(m => {
+          const on = it.result === m, c = markC[m];
+          return { label: m, cursor: editable ? 'pointer' : 'default',
+            bg: on ? c[0] : '#fff', ink: on ? c[1] : '#A2A3AE', border: on ? c[2] : '#E7E7EE',
+            pick: () => { if (!editable) return; it.result = on ? null : m; this.forceUpdate(); } };
+        }),
+      };
+    });
+
+    const disc = sel.items.filter(i => i.result === 'Missing' || i.result === 'Damaged').map(i => {
+      const a = AF.asset(i.asset) || {};
+      return { kind: i.result, tag: i.asset, name: a.name || i.asset, note: i.note || 'No note yet.',
+        chipBg: i.result === 'Missing' ? '#E14B3B' : '#B26205', chipInk: '#fff',
+        action: sel.status === 'Closed' ? (i.result === 'Missing' ? 'Asset marked Lost' : 'Flagged for repair') : (i.result === 'Missing' ? 'Will become Lost on close' : 'Will be flagged for maintenance'),
+        actionInk: i.result === 'Missing' ? '#F08B7E' : '#F2C879' };
+    });
+
+    const done = sel.items.filter(i => i.result).length;
+    const audOptions = AF.employees.filter(e => e.active && e.role !== 'Employee').concat(AF.employees.filter(e => e.active && e.role === 'Employee')).map(e => ({ id: e.id, name: e.name }));
+    const scopeOptions = AF.departments.filter(d => d.active).map(d => ({ v: 'dept:' + d.id, label: 'Dept — ' + d.name }))
+      .concat(['HQ · Floor 1', 'HQ · Floor 2', 'HQ · Floor 3', 'HQ · Floor 4', 'HQ · Garage', 'HQ · Storage B1'].map(l => ({ v: 'loc:' + l, label: 'Location — ' + l })));
+
+    return {
+      locked: false, open: true, roleName: role, toast: s.toast || false,
+      formOpen: s.formOpen,
+      nLabel: s.formOpen ? 'Close form' : 'New cycle',
+      nIcon: s.formOpen ? 'M18 6L6 18M6 6l12 12' : 'M12 5v14M5 12h14',
+      nBg: s.formOpen ? '#fff' : '#5F4DEE', nInk: s.formOpen ? '#17171C' : '#fff', nBorder: s.formOpen ? '#E7E7EE' : '#5F4DEE',
+      toggleForm: () => this.setState({ formOpen: !s.formOpen }),
+      scopeOptions, audOptions,
+      fScope: s.fScope, setFScope: this.set('fScope'), fFrom: s.fFrom, setFFrom: this.set('fFrom'), fTo: s.fTo, setFTo: this.set('fTo'),
+      fAud1: s.fAud1, setFAud1: this.set('fAud1'), fAud2: s.fAud2, setFAud2: this.set('fAud2'),
+      createCycle: () => {
+        const isDept = s.fScope.indexOf('dept:') === 0, key = s.fScope.slice(s.fScope.indexOf(':') + 1);
+        const scopeAssets = AF.assets.filter(a => isDept ? a.dept === key : a.loc === key).slice(0, 12);
+        if (!scopeAssets.length) { this.flash('No assets in that scope — pick another.'); return; }
+        const id = 'AU-' + String(8 + s.audits.filter(a => a.id.indexOf('AU-') === 0).length).padStart(2, '0');
+        const cyc = { id, name: 'Q3 2026 — ' + (isDept ? AF.deptName(key) : key), scopeType: isDept ? 'Department' : 'Location', scope: isDept ? AF.deptName(key) : key,
+          from: s.fFrom, to: s.fTo, auditors: [s.fAud1].concat(s.fAud2 && s.fAud2 !== s.fAud1 ? [s.fAud2] : []), status: 'In Progress',
+          items: scopeAssets.map(a => ({ asset: a.tag, result: null, note: '' })) };
+        this.setState({ audits: [cyc].concat(s.audits), sel: id, formOpen: false });
+        this.flash(id + ' opened with ' + scopeAssets.length + ' assets in scope. Auditors notified.');
+      },
+      cycles,
+      selName: sel.name,
+      selMeta: sel.scopeType + ' · ' + AF.fmtDate(sel.from) + ' – ' + AF.fmtDate(sel.to) + ' · auditors: ' + sel.auditors.map(x => AF.empName(x)).join(', '),
+      selOpen: editable, selClosed: !editable, closedDate: sel.closed ? AF.fmtDate(sel.closed) : '',
+      closeCycle: () => {
+        if (done < sel.items.length) { this.flash('Check all ' + sel.items.length + ' assets before closing — ' + (sel.items.length - done) + ' still unmarked.'); return; }
+        sel.status = 'Closed'; sel.closed = AF.TODAY; this.forceUpdate();
+        const missing = sel.items.filter(i => i.result === 'Missing').length;
+        this.flash(sel.id + ' closed and locked.' + (missing ? ' ' + missing + ' missing asset(s) are now marked Lost.' : ' No discrepancies — clean audit.'));
+      },
+      items,
+      disc, hasDisc: disc.length > 0, discCount: disc.length,
+      discNote: editable ? 'Applied when the cycle is closed' : 'Applied at close on ' + (sel.closed ? AF.fmtDate(sel.closed) : '—'),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
