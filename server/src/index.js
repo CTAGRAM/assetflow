@@ -13,6 +13,15 @@ import { router as notificationsRouter } from './notifications.js';
 const app = express();
 app.use(express.json());
 
+// the Vite dev client on :5173 calls us cross-origin
+app.use((req, res, next) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', 'content-type, authorization');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.get('/api/health', async (_req, res) => {
   await query('select 1');
   res.json({ status: 'ok' });
