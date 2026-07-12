@@ -13,6 +13,7 @@ import Booking from './pages/Booking.jsx';
 // My screens (Tanishq):
 import Organization from './pages/Organization.jsx';
 import Maintenance from './pages/Maintenance.jsx';
+import Audits from './pages/Audits.jsx';
 
 // Clean route paths the shell links to. The prototype used *.dc.html file
 // links; the app maps those to the routes below.
@@ -37,7 +38,7 @@ export default function App() {
             white-screens before his routes land. He replaces these. */}
         <Route path="/organization" element={<Organization />} />
         <Route path="/maintenance" element={<Maintenance />} />
-        <Route path="/audits" element={<Placeholder title="Audits" owner="Tanishq" />} />
+        <Route path="/audits" element={<Audits />} />
         <Route path="/reports" element={<Placeholder title="Reports" owner="Tanishq" />} />
         <Route path="/notifications" element={<Placeholder title="Notifications" owner="Tanishq" />} />
       </Route>
